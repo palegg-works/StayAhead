@@ -1,6 +1,6 @@
 [package]
 name = "stay-ahead"
-version = "0.1.4+1"
+version = "0.1.4+2"
 authors = ["Palegg Works <palegg.works@gmail.com>"]
 edition = "2021"
 
