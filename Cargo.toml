@@ -1,0 +1,54 @@
+[package]
+name = "stay-ahead"
+version = "0.1.4"
+authors = ["Palegg Works <palegg.works@gmail.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4.41"
+dioxus = { version = "0.6.0", features = ["router"] }
+dirs = "6.0.0"
+serde = "1.0.219"
+serde_json = "1.0.140"
+thiserror = "2.0.12"
+
+[features]
+# default = ["desktop"]
+default = ["dioxus/web"]
+web = ["dioxus/web"]
+desktop = ["dioxus/desktop"]
+mobile = ["dioxus/mobile"]
+
+# WebAssembly-specific dependencies
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+gloo-file = "0.3.0"
+gloo-storage = "0.3.0"
+wasm-bindgen = "0.2.100"
+web-sys = { version = "0.3.77", features = [ "Window", "Document", "Blob", "BlobPropertyBag", "HtmlAnchorElement", "Url", ] }
+js-sys = "0.3.77"
+
+# Android-specific dependencies
+[target.'cfg(target_os = "android")'.dependencies]
+jni = "0.21.1"
+
+# IOS-specific dependencies
+[target.'cfg(target_os = "ios")'.dependencies]
+objc = "0.2.7"
+
+# Help! Only include this if not ios, android, and wasm32. basically only need this if on desktop
+[target.'cfg(not(any(target_arch = "wasm32", target_os = "android", target_os = "ios")))'.dependencies]
+rfd = "0.15.3"
+
+[profile]
+
+[profile.wasm-dev]
+inherits = "dev"
+opt-level = 1
+
+[profile.server-dev]
+inherits = "dev"
+
+[profile.android-dev]
+inherits = "dev"
