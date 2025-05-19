@@ -34,8 +34,18 @@ pub fn About() -> Element {
                 }
 
                 div {
-                    h2 { class: "font-semibold", "Is my data safe?" }
-                    p { "Yes. All your data is stored locally on your device. There is no cloud syncing or server-side tracking involved, at least for the time being." }
+                    h2 {  class: "font-semibold", "Can I see your source code?" }
+                    p { "Absolutely. The source code can be accessed from ", a { href: "https://github.com/palegg-works/StayAhead", target: "_blank", "Github" }, "." }
+                }
+
+                div {
+                    h2 {  class: "font-semibold", "Cool. Can I use this on a different platform?" }
+                    p { "Yes. Currently there is a desktop release for MacOS. Please refer the release page on Github. I have personally built and installed the Android version for myself. Please open a ticket if this is needed."}
+                }
+
+                div {
+                    h2 { class: "font-semibold", "Does the app collect any user data?" }
+                    p { "No. All your data is stored locally on your device. There is no cloud syncing or server-side tracking involved, at least for the time being. For example, if you are using the web version, you will loose your data if you clear the cache. The desktop app will offer better data persistency as it is saved on disk." }
                 }
 
                 div {
