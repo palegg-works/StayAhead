@@ -36,10 +36,6 @@ fn App() -> Element {
     rsx! {
         document::Link { rel: "icon", href: FAVICON }
         document::Link { rel: "stylesheet", href: TAILWIND_CSS }
-
-        div {
-            class: "min-w-[500px]",
-            Router::<Route> {}
-        }
+        Router::<Route> {}
     }
 }

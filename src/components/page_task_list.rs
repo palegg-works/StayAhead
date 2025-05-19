@@ -1,6 +1,9 @@
 use super::routes::Route;
-use crate::states::{import_data, AppState, SerializableState};
+use crate::states::{AppState, SerializableState};
 use dioxus::prelude::*;
+
+#[cfg(not(any(target_os = "android", target_os = "ios")))]
+use crate::states::import_data;
 
 #[component]
 pub fn TaskList() -> Element {

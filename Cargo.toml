@@ -1,6 +1,6 @@
 [package]
 name = "stay-ahead"
-version = "0.1.4+2"
+version = "0.1.4+5"
 authors = ["Palegg Works <palegg.works@gmail.com>"]
 edition = "2021"
 
@@ -15,8 +15,7 @@ serde_json = "1.0.140"
 thiserror = "2.0.12"
 
 [features]
-# default = ["desktop"]
-default = ["dioxus/web"]
+default = ["desktop"]
 web = ["dioxus/web"]
 desktop = ["dioxus/desktop"]
 mobile = ["dioxus/mobile"]

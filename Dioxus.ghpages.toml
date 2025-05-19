@@ -4,6 +4,7 @@
 
 # HTML title tag content
 title = "Stay Ahead"
+base_path = "StayAhead"
 
 # include `assets` in web platform
 [web.resource]
