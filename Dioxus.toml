@@ -22,3 +22,5 @@ script = []
 
 [bundle]
 icon = ["assets/icons/favicon_highres.ico"]
+identifier = "com.paleggworks"
+publisher = "Palegg Works"
