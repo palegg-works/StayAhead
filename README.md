@@ -1,6 +1,6 @@
 # Stay Ahead
 
-Habit builder
+Habit builder with carried-over time
 
 _under development_
 
