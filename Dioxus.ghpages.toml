@@ -4,6 +4,10 @@
 
 # HTML title tag content
 title = "Stay Ahead"
+
+# For Github Pages, I need to add this base path so
+# that the website is rendered at the correct url
+#
 base_path = "StayAhead"
 
 # include `assets` in web platform
