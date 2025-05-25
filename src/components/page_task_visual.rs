@@ -112,7 +112,7 @@ pub fn TaskVisual(id: i64) -> Element {
                     let user_ratio = fill_ratio_user_universe(i, task.count_per_day, task.count_accum);
                     rsx! {
                         div {
-                            class: "grid grid-cols-3 gap-4 items-center p-2 border border-gray-200 rounded-lg mb-2", // Bounding box styles
+                            class: "grid grid-cols-3 gap-1 items-center p-2 border border-gray-200 rounded-lg mb-0.5", // Bounding box styles
                             // Parallel Universe box
                             div {
                                 class: "flex flex-col items-center",
@@ -129,7 +129,6 @@ pub fn TaskVisual(id: i64) -> Element {
                             div {
                                 class: "flex flex-col items-center rounded-lg",
                                 p {
-                                    class: "text-xs text-gray-600",
                                     {
                                         format!("{} [{}]", date.format("%Y-%m-%d"), date.weekday())
                                     }
@@ -138,7 +137,7 @@ pub fn TaskVisual(id: i64) -> Element {
                                 if let Some(daily_tasks) = &task.daily_tasks {
                                     if show_details() {
                                         p {
-                                            class: "text-xs text-gray-600",
+                                            class: "text-center text-sm text-gray-600",
                                             "{daily_tasks[i]}",
                                         }
                                     }
