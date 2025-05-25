@@ -73,7 +73,13 @@ pub fn ActionLog() -> Element {
                                 tasks.iter().map(|task| rsx! {
                                     option {
                                         value: "{task.id}",
-                                        "{task.action} {task.count_per_day} {task.unit}"
+                                        {
+                                            if let Some(task_name) = &task.name {
+                                                task_name.clone()
+                                            } else {
+                                                format!("{} {} {}", task.action, task.count_per_day, task.unit)
+                                            }
+                                        }
                                     }
                                 })
                             }

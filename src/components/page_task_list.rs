@@ -89,7 +89,13 @@ pub fn TaskList() -> Element {
                                         class: "relative block bg-white shadow-md rounded-xl p-4 border border-gray-100 hover:shadow-lg transition-shadow hover:ring-2 hover:ring-blue-300",
                                         h3 {
                                             class: "text-lg font-semibold text-blue-800",
-                                            { format!("{} {} {}", task.action, task.count_per_day, task.unit) }
+                                            {
+                                                if task.name.is_some() {
+                                                    task.name.clone().unwrap()
+                                                } else {
+                                                    format!("{} {} {}", task.action, task.count_per_day, task.unit)
+                                                }
+                                            }
                                         }
 
                                         p {

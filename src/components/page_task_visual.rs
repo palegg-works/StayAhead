@@ -66,6 +66,9 @@ pub fn TaskVisual(id: i64) -> Element {
     let parallel_accomplished = days_passed_inclusive as f32 * task.count_per_day;
     let parallel_remaining = (total_days as f32 * task.count_per_day) - parallel_accomplished;
 
+    let mut show_details = use_signal(|| true);
+    let has_details = use_signal(|| task.daily_tasks.is_some());
+
     rsx! {
         div {
             class: "p-6 max-w-5xl mx-auto space-y-6",
@@ -76,61 +79,85 @@ pub fn TaskVisual(id: i64) -> Element {
 
             div { class: "text-center font-semibold text-green-700", "🚀 Let's Go!" }
 
+            // A single grid container for the headers
             div {
-                class: "grid grid-cols-3 gap-4",
+                class: "grid grid-cols-3 gap-1 mb-4", // Added mb-4 for spacing below headers
+                div { class: "flex flex-col items-center", p { class: "font-medium text-blue-800", "🌌 Parallel Universe" } }
 
-                div {
-                    class: "flex flex-col items-center",
-                    p { class: "font-medium text-blue-800 mb-2", "🌌 Parallel Universe" },
-                    {
-                        dates.iter().map(|&date| {
-                            let ratio = fill_ratio_parallel_universe(date, today);
-                            rsx! {
+                if has_details() {
+                    div {
+                        class: format!(
+                                   "cursor-pointer rounded-lg text-center font-semibold transition-colors duration-200 {}",
+                                   if show_details() {
+                                       "bg-blue-600 text-white shadow-md"
+                                   } else {
+                                       "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                   }
+                               ),
+                               onclick: move |_| show_details.set(!show_details()),
+                               "📅 Timeline",
+                    }
+                } else {
+                    div { class: "flex flex-col items-center", p { class: "font-medium text-gray-500", "📅 Timeline" } }
+                }
+
+                div { class: "flex flex-col items-center", p { class: "font-medium text-purple-800", "🪐 Your Universe" } }
+            }
+
+            // A single grid for each available date
+            {
+                dates.iter().enumerate().map(|(i, &date)| {
+                    let parallel_ratio = fill_ratio_parallel_universe(date, today);
+                    let user_ratio = fill_ratio_user_universe(i, task.count_per_day, task.count_accum);
+                    rsx! {
+                        div {
+                            class: "grid grid-cols-3 gap-4 items-center p-2 border border-gray-200 rounded-lg mb-2", // Bounding box styles
+                            // Parallel Universe box
+                            div {
+                                class: "flex flex-col items-center",
                                 div {
-                                    class: "w-16 h-4 mb-1 bg-gray-200 rounded overflow-hidden",
+                                    class: "w-16 h-4 bg-gray-200 rounded overflow-hidden",
                                     div {
                                         class: "h-full bg-blue-400 transition-all duration-300",
-                                        style: "width: {ratio * 100.0}%;"
+                                        style: "width: {parallel_ratio * 100.0}%;"
                                     }
                                 }
                             }
-                        })
-                    }
-                }
 
-                div {
-                    class: "flex flex-col items-center",
-                    p { class: "font-medium text-gray-500 mb-2", "📅 Timeline" },
-                    {
-                        dates.iter().map(|date| rsx! {
-                            p {
-                                class: "text-xs text-gray-600 mb-1",
-                                {
-                                    format!("{} [{}]", date.format("%Y-%m-%d"), date.weekday())
+                            // Timeline date
+                            div {
+                                class: "flex flex-col items-center rounded-lg",
+                                p {
+                                    class: "text-xs text-gray-600",
+                                    {
+                                        format!("{} [{}]", date.format("%Y-%m-%d"), date.weekday())
+                                    }
+                                }
+
+                                if let Some(daily_tasks) = &task.daily_tasks {
+                                    if show_details() {
+                                        p {
+                                            class: "text-xs text-gray-600",
+                                            "{daily_tasks[i]}",
+                                        }
+                                    }
                                 }
                             }
-                        })
-                    }
-                }
 
-                div {
-                    class: "flex flex-col items-center",
-                    p { class: "font-medium text-purple-800 mb-2", "🪐 Your Universe" },
-                    {
-                        dates.iter().enumerate().map(|(i, _)| {
-                            let ratio = fill_ratio_user_universe(i, task.count_per_day, task.count_accum);
-                            rsx! {
+                            // Your Universe box
+                            div {
+                                class: "flex flex-col items-center",
                                 div {
-                                    class: "w-16 h-4 mb-1 bg-gray-200 rounded overflow-hidden",
+                                    class: "w-16 h-4 bg-gray-200 rounded overflow-hidden",
                                     div {
                                         class: "h-full bg-purple-400 transition-all duration-300",
-                                        style: "width: {ratio * 100.0}%;"
+                                        style: "width: {user_ratio * 100.0}%;"
                                     }
                                 }
                             }
-                        })
+                        }
                     }
-                }
+                })
             }
 
             div { class: "text-center font-semibold text-red-600", "🏁 Finish line!" }

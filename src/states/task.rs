@@ -13,6 +13,14 @@ fn default_effective_dow() -> Vec<String> {
     ]
 }
 
+fn default_daily_tasks() -> Option<Vec<String>> {
+    None
+}
+
+fn default_name() -> Option<String> {
+    None
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct MyTask {
     pub id: i64,
@@ -23,6 +31,8 @@ pub struct MyTask {
     pub start: NaiveDate,
     pub end: NaiveDate,
     pub effective_dow: Vec<Weekday>,
+    pub daily_tasks: Option<Vec<String>>,
+    pub name: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -37,6 +47,12 @@ pub struct SerializableTask {
 
     #[serde(default = "default_effective_dow")]
     pub effective_dow: Vec<String>,
+
+    #[serde(default = "default_daily_tasks")]
+    pub daily_tasks: Option<Vec<String>>,
+
+    #[serde(default = "default_name")]
+    pub name: Option<String>,
 }
 
 impl From<&MyTask> for SerializableTask {
@@ -50,6 +66,8 @@ impl From<&MyTask> for SerializableTask {
             start: task.start.to_string(),
             end: task.end.to_string(),
             effective_dow: task.effective_dow.iter().map(|d| d.to_string()).collect(),
+            daily_tasks: task.daily_tasks.clone(),
+            name: task.name.clone(),
         }
     }
 }
@@ -71,6 +89,8 @@ impl TryFrom<&SerializableTask> for MyTask {
                 .iter()
                 .map(|s| s.parse::<Weekday>().expect("Failed to parse day of week!"))
                 .collect(),
+            daily_tasks: task.daily_tasks.clone(),
+            name: task.name.clone(),
         })
     }
 }
