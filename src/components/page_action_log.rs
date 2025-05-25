@@ -99,7 +99,7 @@ pub fn ActionLog() -> Element {
                                 " ".to_string()
                             };
 
-                            format!("How many{} did you accomplish?", unit_str)
+                            format!("How many{} did you accomplish? (Try fractions as well)", unit_str)
                         }
                     }
 

@@ -355,7 +355,7 @@ pub fn TaskCreate() -> Element {
                     div {
                         label {
                             class: "block text-sm font-medium text-gray-700",
-                            "Daily Activities (One activity per line):"
+                            "Daily Activities (One line is one day):"
                         }
                         textarea {
                             class: "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 h-32", // Added h-32 for height

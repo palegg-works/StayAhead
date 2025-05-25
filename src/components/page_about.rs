@@ -24,23 +24,35 @@ pub fn About() -> Element {
                 div {
                     h2 { class: "font-semibold", "How does the timeline work?" }
                     p {
-                        "For each task, Stay Ahead shows two timelines: "
-                        strong { "Parallel Universe" }
-                        " (planned progression) and "
-                        strong { "Your Universe" }
-                        " (your actual effort). This helps you visualize the gap and stay motivated. "
-                        strong { "Make this universe (timeline) your best one!" }
+                        "For each task, Stay Ahead shows two timelines: ",
+                        strong { "Parallel Universe" },
+                        " (planned progression) and ",
+                        strong { "Your Universe" },
+                        " (your actual effort). This helps you visualize the gap and stay motivated. ",
+                        span {
+                            class: "inline-block bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-md font-bold italic", // Highlighted with a background
+                            "Make this universe (timeline) your best one!"
+                        },
                     }
                 }
 
                 div {
                     h2 {  class: "font-semibold", "Can I see your source code?" }
-                    p { "Absolutely. The source code can be accessed from ", a { href: "https://github.com/palegg-works/StayAhead", target: "_blank", "Github" }, "." }
+                    p {
+                        "Absolutely. Please visit ",
+                        a {
+                            href: "https://github.com/palegg-works/StayAhead",
+                            target: "_blank",
+                            class: "text-blue-600 hover:text-blue-800 underline font-semibold",
+                            "Github (StayAhead from Palegg Works)"
+                        },
+                        "."
+                    }
                 }
 
                 div {
                     h2 {  class: "font-semibold", "Cool. Can I use this on a different platform?" }
-                    p { "Yes. Currently there is a desktop release for MacOS. Please refer the release page on Github. I have personally built and installed the Android version for myself. Please open a ticket if this is needed."}
+                    p { "Yes. Currently there is a desktop release for MacOS. Please refer the release page on Github. I have personally built and installed the Android version for myself. Open a ticket if this is needed."}
                 }
 
                 div {
@@ -50,7 +62,14 @@ pub fn About() -> Element {
 
                 div {
                     h2 { class: "font-semibold", "Who made this?" }
-                    p { "Stay Ahead is an independent app developed by Palegg Works to promote mindful productivity and consistency." }
+                    p {
+                        "I am an independent developer and I decided to go by ",
+                        span {
+                            class: "italic text-indigo-700 font-semibold px-1 py-0.5 rounded-sm hover:bg-indigo-100 transition-colors duration-200",
+                            "Palegg Works"
+                        },
+                        " to promote mindful productivity and consistency."
+                    }
                 }
 
                 div {
