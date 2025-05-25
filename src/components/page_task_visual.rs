@@ -68,6 +68,7 @@ pub fn TaskVisual(id: i64) -> Element {
 
     let mut show_details = use_signal(|| true);
     let has_details = use_signal(|| task.daily_tasks.is_some());
+    let mut n_clicks_on_remove = use_signal(|| 0_i64);
 
     rsx! {
         div {
@@ -202,13 +203,21 @@ pub fn TaskVisual(id: i64) -> Element {
                     button {
                         class: "bg-red-100 hover:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-red-300 hover:ring-offset-2",
                         onclick: move |_| {
-                            let mut tasks_signal = app_state.tasks.write();
-                            if let Some(tasks_vec) = tasks_signal.as_mut() {
-                                tasks_vec.retain(|t| t.id != id);
+                            if n_clicks_on_remove() == 0 {
+                                n_clicks_on_remove.set(1);
+                            } else if n_clicks_on_remove() == 1 {
+                                let mut tasks_signal = app_state.tasks.write();
+                                if let Some(tasks_vec) = tasks_signal.as_mut() {
+                                    tasks_vec.retain(|t| t.id != id);
+                                }
+                                navigator.push(Route::TaskList);
                             }
-                            navigator.push(Route::TaskList);
                         },
-                        "🗑 Remove Task"
+                        {
+                            if n_clicks_on_remove() == 0 {"🗑 Remove Task"}
+                            else if n_clicks_on_remove() == 1 {"Confirm Removing"}
+                            else {"Error!"}
+                        }
                     }
                 }
             }
