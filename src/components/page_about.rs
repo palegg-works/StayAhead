@@ -30,7 +30,7 @@ pub fn About() -> Element {
                         strong { "Your Universe" },
                         " (your actual effort). This helps you visualize the gap and stay motivated. ",
                         span {
-                            class: "inline-block bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-md font-bold italic", // Highlighted with a background
+                            class: "inline-block bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded-md font-bold italic",
                             "Make this universe (timeline) your best one!"
                         },
                     }
@@ -64,8 +64,10 @@ pub fn About() -> Element {
                     h2 { class: "font-semibold", "Who made this?" }
                     p {
                         "I am an independent developer and I decided to go by ",
-                        span {
+                        a {
                             class: "italic text-indigo-700 font-semibold px-1 py-0.5 rounded-sm hover:bg-indigo-100 transition-colors duration-200",
+                            target: "_blank",
+                            href: "https://palegg-works.github.io",
                             "Palegg Works"
                         },
                         " to promote mindful productivity and consistency."
