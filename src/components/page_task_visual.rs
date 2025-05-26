@@ -4,6 +4,8 @@ use chrono::{Datelike, Duration, Local, NaiveDate, Timelike};
 use dioxus::prelude::*;
 use std::cmp::Ordering;
 
+const COLLAPSE_ICON: Asset = asset!("/assets/png/collapse.png");
+
 fn generate_date_range(
     start: NaiveDate,
     end: NaiveDate,
@@ -69,6 +71,7 @@ pub fn TaskVisual(id: i64) -> Element {
     let mut show_details = use_signal(|| true);
     let has_details = use_signal(|| task.daily_tasks.is_some());
     let mut n_clicks_on_remove = use_signal(|| 0_i64);
+    let mut collapsed_past = use_signal(|| false);
 
     rsx! {
         div {
@@ -82,38 +85,87 @@ pub fn TaskVisual(id: i64) -> Element {
 
             // A single grid container for the headers
             div {
-                class: "grid grid-cols-3 gap-1 mb-4", // Added mb-4 for spacing below headers
-                div { class: "flex flex-col items-center", p { class: "font-medium text-blue-800", "🌌 Parallel Universe" } }
-
-                if has_details() {
-                    div {
-                        class: format!(
-                                   "cursor-pointer rounded-lg text-center font-semibold transition-colors duration-200 {}",
-                                   if show_details() {
-                                       "bg-blue-600 text-white shadow-md"
-                                   } else {
-                                       "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                   }
-                               ),
-                               onclick: move |_| show_details.set(!show_details()),
-                               "📅 Timeline",
-                    }
-                } else {
-                    div { class: "flex flex-col items-center", p { class: "font-medium text-gray-500", "📅 Timeline" } }
+                class: "grid grid-cols-3 gap-1 mb-4",
+                div {
+                    class: "flex flex-col items-center justify-top",
+                    p { class: "font-medium text-blue-800", "🌌 Parallel Universe" }
                 }
 
-                div { class: "flex flex-col items-center", p { class: "font-medium text-purple-800", "🪐 Your Universe" } }
+                div {
+                    class: "flex flex-col justify-start",
+
+                    if has_details() {
+                        div {
+                            class: format!(
+                                       "w-full flex justify-center cursor-pointer rounded-lg text-center font-semibold transition-colors duration-200 {}",
+                                       if show_details() {
+                                           "bg-blue-600 text-white shadow-md"
+                                       } else {
+                                           "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                       }
+                                   ),
+                                   onclick: move |_| show_details.set(!show_details()),
+                                   "📅 Timeline",
+                        }
+                    } else {
+                        div {
+                            class: "w-full flex justify-center",
+                            p { class: "font-medium text-gray-500", "📅 Timeline" }
+                        }
+                    }
+
+                    div {
+                        class: "w-full flex justify-center items-center mt-2",
+
+                        button {
+                            class: "p-0 w-9 rounded-full transition-all duration-150",
+                            onclick: move |_| collapsed_past.set(!collapsed_past()),
+                            img {
+                                src: COLLAPSE_ICON,
+                                alt: "Toggle collapse",
+                                class: format!("cursor-pointer rounded-full {}",
+                                    if collapsed_past() {"bg-gray-300 shadow-inner"}
+                                    else {"bg-gray-100 shadow-md hover:bg-gray-300"} ),
+                            }
+                        }
+                    }
+                }
+
+                div {
+                    class: "flex flex-col items-center justify-top",
+                    p { class: "font-medium text-purple-800", "🪐 Your Universe" }
+                }
             }
 
             // A single grid for each available date
             {
-                dates.iter().enumerate().map(|(i, &date)| {
+                let mut show_once = true;
+
+                dates.iter().enumerate().map(move |(i, &date)| {
+                    if collapsed_past() && date != task.start && date < today {
+                        if show_once {
+                            show_once = false;
+
+                            return rsx! {
+                                div {
+                                    class: "grid grid-cols-1 gap-1 items-center p-2 border border-gray-200 rounded-lg mb-0.5",
+                                    div {
+                                        class: "flex flex-col items-center",
+                                        p { "..." }
+                                    }
+                                }
+                            };
+                        } else {
+                            return rsx! {};
+                        }
+                    }
+
                     let parallel_ratio = fill_ratio_parallel_universe(date, today);
                     let user_ratio = fill_ratio_user_universe(i, task.count_per_day, task.count_accum);
                     rsx! {
                         div {
                             class: "grid grid-cols-3 gap-1 items-center p-2 border border-gray-200 rounded-lg mb-0.5", // Bounding box styles
-                            // Parallel Universe box
+                                                                                                                       // Parallel Universe box
                             div {
                                 class: "flex flex-col items-center",
                                 div {
@@ -122,7 +174,7 @@ pub fn TaskVisual(id: i64) -> Element {
                                         class: "h-full bg-blue-400 transition-all duration-300",
                                         style: "width: {parallel_ratio * 100.0}%;"
                                     }
-                                }
+                                    }
                             }
 
                             // Timeline date
@@ -132,7 +184,7 @@ pub fn TaskVisual(id: i64) -> Element {
                                     {
                                         format!("{} [{}]", date.format("%Y-%m-%d"), date.weekday())
                                     }
-                                }
+                                    }
 
                                 if let Some(daily_tasks) = &task.daily_tasks {
                                     if show_details() {
