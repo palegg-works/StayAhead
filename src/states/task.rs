@@ -21,6 +21,10 @@ fn default_name() -> Option<String> {
     None
 }
 
+fn default_archive() -> bool {
+    false
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct MyTask {
     pub id: i64,
@@ -33,6 +37,7 @@ pub struct MyTask {
     pub effective_dow: Vec<Weekday>,
     pub daily_tasks: Option<Vec<String>>,
     pub name: Option<String>,
+    pub archive: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -53,6 +58,9 @@ pub struct SerializableTask {
 
     #[serde(default = "default_name")]
     pub name: Option<String>,
+
+    #[serde(default = "default_archive")]
+    pub archive: bool,
 }
 
 impl From<&MyTask> for SerializableTask {
@@ -68,6 +76,7 @@ impl From<&MyTask> for SerializableTask {
             effective_dow: task.effective_dow.iter().map(|d| d.to_string()).collect(),
             daily_tasks: task.daily_tasks.clone(),
             name: task.name.clone(),
+            archive: task.archive,
         }
     }
 }
@@ -91,6 +100,7 @@ impl TryFrom<&SerializableTask> for MyTask {
                 .collect(),
             daily_tasks: task.daily_tasks.clone(),
             name: task.name.clone(),
+            archive: task.archive,
         })
     }
 }

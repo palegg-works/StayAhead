@@ -292,6 +292,7 @@ pub fn TaskCreate() -> Element {
                                         effective_dow: selected_dow(),
                                         daily_tasks: None,
                                         name: None,
+                                        archive: false,
                                     };
 
                                     let should_insert = app_state.tasks.read().is_some();
@@ -434,6 +435,7 @@ pub fn TaskCreate() -> Element {
                                             effective_dow: selected_dow(),
                                             daily_tasks: Some(fmt_acts),
                                             name: Some(customized_task_name()),
+                                            archive: false,
                                         };
 
                                         let should_insert = app_state.tasks.read().is_some();

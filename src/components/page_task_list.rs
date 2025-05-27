@@ -30,6 +30,8 @@ pub fn TaskList() -> Element {
         }
     });
 
+    let mut archive_view = use_signal(|| false);
+
     #[cfg(any(target_os = "android", target_os = "ios"))]
     let div_export_import_data_buttons = rsx! {};
 
@@ -73,15 +75,30 @@ pub fn TaskList() -> Element {
 
             if has_tasks() {
                 div {
-                    p {
-                        class: "font-semibold text-gray-800 text-lg",
-                        {format!("🗂 You have {} task(s):", (app_state.tasks)().unwrap().len())}
+                    div {
+                        class: "flex items-center justify-between my-2",
+                        p {
+                            class: "font-semibold text-gray-800 text-lg",
+                            {
+                                let n_tasks = (app_state.tasks)().unwrap().iter().filter(
+                                    |task| if archive_view() {task.archive} else {!task.archive}).count();
+                                format!("🗂 You have {} {} task(s):", n_tasks, if archive_view() {"archived"} else {"active"})}
+                        },
+
+                        button {
+                            class: "font-semibold py-2 px-2 rounded bg-blue-300 hover:bg-blue-700 text-white cursor-pointer transition-colors duration-300",
+                            onclick: move |_| {
+                                archive_view.set(!archive_view());
+                            },
+                            "Toggle Archive View",
+                        },
                     }
 
                     div {
                         class: "grid grid-cols-1 gap-4",
                         {
-                            (app_state.tasks)().unwrap().iter().map(|task| {
+                            (app_state.tasks)().unwrap().iter().filter(
+                                |task| if archive_view() {task.archive} else {!task.archive}).map(|task| {
                                 let id = task.id;
                                 rsx! {
                                     Link {

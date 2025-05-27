@@ -4,7 +4,8 @@ use chrono::{Datelike, Duration, Local, NaiveDate, Timelike};
 use dioxus::prelude::*;
 use std::cmp::Ordering;
 
-const COLLAPSE_ICON: Asset = asset!("/assets/png/collapse.png");
+const COLLAPSE_TO_TODAY_ICON: Asset = asset!("/assets/png/collapse_to_today.png");
+const COLLAPSE_TO_DONE_ICON: Asset = asset!("/assets/png/collapse_to_done.png");
 
 fn generate_date_range(
     start: NaiveDate,
@@ -34,7 +35,7 @@ fn fill_ratio_parallel_universe(date: NaiveDate, today: NaiveDate) -> f32 {
 }
 
 fn fill_ratio_user_universe(index: usize, count_per_day: f32, count_accum: f32) -> f32 {
-    let full_boxes = (count_accum / count_per_day).floor() as usize;
+    let full_boxes = (count_accum / count_per_day) as usize;
     let remaining = count_accum % count_per_day;
 
     match index.cmp(&full_boxes) {
@@ -71,7 +72,9 @@ pub fn TaskVisual(id: i64) -> Element {
     let mut show_details = use_signal(|| true);
     let has_details = use_signal(|| task.daily_tasks.is_some());
     let mut n_clicks_on_remove = use_signal(|| 0_i64);
-    let mut collapsed_past = use_signal(|| false);
+    let mut n_clicks_on_archive = use_signal(|| 0_i64);
+    let mut collapse_to_today = use_signal(|| false);
+    let mut collapse_to_done = use_signal(|| false);
 
     rsx! {
         div {
@@ -117,14 +120,34 @@ pub fn TaskVisual(id: i64) -> Element {
                     div {
                         class: "w-full flex justify-center items-center mt-2",
 
+                        p {
+                            "Skip to "
+                        }
+
                         button {
-                            class: "p-0 w-9 rounded-full transition-all duration-150",
-                            onclick: move |_| collapsed_past.set(!collapsed_past()),
+                            class: "p-0 w-9 transition-all duration-150 m-2",
+                            onclick: move |_| {
+                                collapse_to_today.set(!collapse_to_today());
+                                collapse_to_done.set(false);
+                            },
                             img {
-                                src: COLLAPSE_ICON,
-                                alt: "Toggle collapse",
-                                class: format!("cursor-pointer rounded-full {}",
-                                    if collapsed_past() {"bg-gray-300 shadow-inner"}
+                                src: COLLAPSE_TO_TODAY_ICON,
+                                class: format!("cursor-pointer rounded-lg select-none {}",
+                                    if collapse_to_today() {"bg-gray-300 shadow-inner"}
+                                    else {"bg-gray-100 shadow-md hover:bg-gray-300"} ),
+                            }
+                        }
+
+                        button {
+                            class: "p-0 w-9 transition-all duration-150 m-2",
+                            onclick: move |_| {
+                                collapse_to_done.set(!collapse_to_done());
+                                collapse_to_today.set(false);
+                            },
+                            img {
+                                src: COLLAPSE_TO_DONE_ICON,
+                                class: format!("cursor-pointer rounded-lg select-none {}",
+                                    if collapse_to_done() {"bg-gray-300 shadow-inner"}
                                     else {"bg-gray-100 shadow-md hover:bg-gray-300"} ),
                             }
                         }
@@ -139,12 +162,16 @@ pub fn TaskVisual(id: i64) -> Element {
 
             // A single grid for each available date
             {
-                let mut show_once = true;
+                let mut show_ellipsis = true;
+                let mut n_done_days = task.count_accum / task.count_per_day;
 
                 dates.iter().enumerate().map(move |(i, &date)| {
-                    if collapsed_past() && date != task.start && date < today {
-                        if show_once {
-                            show_once = false;
+                    n_done_days -= 1.0;
+                    let collapse_this = (collapse_to_today() && date != task.start && date < today) || (collapse_to_done() && date != task.start && n_done_days > 0.0);
+
+                    if collapse_this {
+                        if show_ellipsis {
+                            show_ellipsis = false;
 
                             return rsx! {
                                 div {
@@ -217,7 +244,6 @@ pub fn TaskVisual(id: i64) -> Element {
             div {
                 class: "text-center grid grid-cols-2 gap-4 justify-center",
 
-
                 div {
                     class: "bg-blue-50 border border-blue-200 rounded-xl p-4 shadow",
                     p { "Accomplished: {parallel_accomplished:.1} {task.unit}" }
@@ -233,42 +259,71 @@ pub fn TaskVisual(id: i64) -> Element {
         }
 
         div {
-            class: "p-6 max-w-5xl mx-auto space-y-6",
+            class: "p-6 max-w-5xl grid grid-cols-3 mx-auto",
 
             div {
-                class: "grid grid-cols-2 max-w-sm mx-auto",
+                class: "flex flex-col justify-center mx-4",
+                button {
+                    class: "bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-gray-300 hover:ring-offset-2",
+                    onclick: move |_| {
+                        navigator.push(Route::TaskList);
+                    },
+                    "⬅️ All Tasks",
+                }
+            },
 
-                div {
-                    class: "justify-self-end mr-2",
-                    button {
-                        class: "bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-gray-300 hover:ring-offset-2",
-                        onclick: move |_| {
-                            navigator.push(Route::TaskList);
-                        },
-                        "⬅️ All Tasks",
-                    }
-                },
+            div {
+                class: "flex flex-col justify-center mx-4",
+                button {
+                    class: "bg-red-100 hover:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-red-300 hover:ring-offset-2",
+                    onclick: move |_| {
+                        if n_clicks_on_archive() == 0 {
+                            n_clicks_on_archive.set(1);
+                        } else if n_clicks_on_archive() == 1 {
+                            let mut tasks_signal = app_state.tasks.write();
 
-                div {
-                    class: "justify-self-start ml-2",
-                    button {
-                        class: "bg-red-100 hover:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-red-300 hover:ring-offset-2",
-                        onclick: move |_| {
-                            if n_clicks_on_remove() == 0 {
-                                n_clicks_on_remove.set(1);
-                            } else if n_clicks_on_remove() == 1 {
-                                let mut tasks_signal = app_state.tasks.write();
-                                if let Some(tasks_vec) = tasks_signal.as_mut() {
-                                    tasks_vec.retain(|t| t.id != id);
+                            if let Some(tasks_vec) = tasks_signal.as_mut() {
+                                for task in tasks_vec.iter_mut() {
+                                    if task.id == id {
+                                        task.archive = !task.archive;
+                                    }
                                 }
-                                navigator.push(Route::TaskList);
                             }
-                        },
-                        {
-                            if n_clicks_on_remove() == 0 {"🗑 Remove Task"}
-                            else if n_clicks_on_remove() == 1 {"Confirm Removing"}
-                            else {"Error!"}
+
+                            navigator.push(Route::TaskList);
                         }
+                    },
+                    if task.archive {
+                        if n_clicks_on_archive() == 0 {"📦 Activate Task"}
+                        else if n_clicks_on_archive() == 1 {"Confirm Activation"}
+                        else {"Error!"}
+                    } else {
+                        if n_clicks_on_archive() == 0 {"📦 Archive Task"}
+                        else if n_clicks_on_archive() == 1 {"Confirm Archiving"}
+                        else {"Error!"}
+                    }
+                }
+            }
+
+            div {
+                class: "flex flex-col justify-center mx-4",
+                button {
+                    class: "bg-red-100 hover:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-red-300 hover:ring-offset-2",
+                    onclick: move |_| {
+                        if n_clicks_on_remove() == 0 {
+                            n_clicks_on_remove.set(1);
+                        } else if n_clicks_on_remove() == 1 {
+                            let mut tasks_signal = app_state.tasks.write();
+                            if let Some(tasks_vec) = tasks_signal.as_mut() {
+                                tasks_vec.retain(|t| t.id != id);
+                            }
+                            navigator.push(Route::TaskList);
+                        }
+                    },
+                    {
+                        if n_clicks_on_remove() == 0 {"🗑 Remove Task"}
+                        else if n_clicks_on_remove() == 1 {"Confirm Removing"}
+                        else {"Error!"}
                     }
                 }
             }
