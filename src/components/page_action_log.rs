@@ -70,7 +70,7 @@ pub fn ActionLog() -> Element {
 
                         if let Some(tasks) = (app_state.tasks)() {
                             {
-                                tasks.iter().map(|task| rsx! {
+                                tasks.iter().filter(|task| !task.archive).map(|task| rsx! {
                                     option {
                                         value: "{task.id}",
                                         {

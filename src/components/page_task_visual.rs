@@ -167,7 +167,7 @@ pub fn TaskVisual(id: i64) -> Element {
 
                 dates.iter().enumerate().map(move |(i, &date)| {
                     n_done_days -= 1.0;
-                    let collapse_this = (collapse_to_today() && date != task.start && date < today) || (collapse_to_done() && date != task.start && n_done_days > 0.0);
+                    let collapse_this = (collapse_to_today() && date < today) || (collapse_to_done() && n_done_days > 0.0);
 
                     if collapse_this {
                         if show_ellipsis {
