@@ -1,6 +1,7 @@
 use super::header_navbar::HeaderNavbar;
 use super::page_about::About;
 use super::page_action_log::ActionLog;
+use super::page_setting::Setting;
 use super::page_task_create::TaskCreate;
 use super::page_task_list::TaskList;
 use super::page_task_visual::TaskVisual;
@@ -23,4 +24,7 @@ pub enum Route {
 
     #[route("/about")]
     About,
+
+    #[route("/setting")]
+    Setting,
 }

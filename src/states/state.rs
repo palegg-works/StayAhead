@@ -1,3 +1,4 @@
+use super::sync_mode::SyncMode;
 use super::task::{MyTask, SerializableTask};
 use dioxus::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -6,14 +7,39 @@ use std::path::PathBuf;
 
 const STORAGE_KEY: &str = "PaleggWorks_StayAhead_AppState";
 
+fn default_github_pat() -> Option<String> {
+    None
+}
+
+fn default_gist_id() -> Option<String> {
+    None
+}
+
+fn default_gist_file_name() -> Option<String> {
+    None
+}
+
 #[derive(Debug, Clone)]
 pub struct AppState {
     pub tasks: Signal<Option<Vec<MyTask>>>,
+    pub sync_mode: Signal<SyncMode>,
+    pub github_pat: Signal<Option<String>>,
+    pub gist_id: Signal<Option<String>>,
+    pub gist_file_name: Signal<Option<String>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SerializableState {
     pub tasks: Option<Vec<SerializableTask>>,
+
+    #[serde(default = "default_github_pat")]
+    pub github_pat: Option<String>,
+
+    #[serde(default = "default_gist_id")]
+    pub gist_id: Option<String>,
+
+    #[serde(default = "default_gist_file_name")]
+    pub gist_file_name: Option<String>,
 }
 
 impl From<&AppState> for SerializableState {
@@ -21,9 +47,19 @@ impl From<&AppState> for SerializableState {
         let tasks = (state.tasks)();
         if let Some(tasks) = tasks {
             let tasks: Vec<SerializableTask> = tasks.iter().map(SerializableTask::from).collect();
-            SerializableState { tasks: Some(tasks) }
+            SerializableState {
+                tasks: Some(tasks),
+                github_pat: (state.github_pat)(),
+                gist_id: (state.gist_id)(),
+                gist_file_name: (state.gist_file_name)(),
+            }
         } else {
-            SerializableState { tasks: None }
+            SerializableState {
+                tasks: None,
+                github_pat: (state.github_pat)(),
+                gist_id: (state.gist_id)(),
+                gist_file_name: (state.gist_file_name)(),
+            }
         }
     }
 }
@@ -42,10 +78,18 @@ impl TryFrom<SerializableState> for AppState {
 
             Ok(AppState {
                 tasks: Signal::new(Some(tasks)),
+                github_pat: Signal::new(state.github_pat),
+                gist_id: Signal::new(state.gist_id),
+                gist_file_name: Signal::new(state.gist_file_name),
+                sync_mode: Signal::new(SyncMode::NotSynced),
             })
         } else {
             Ok(AppState {
                 tasks: Signal::new(None),
+                github_pat: Signal::new(state.github_pat),
+                gist_id: Signal::new(state.gist_id),
+                gist_file_name: Signal::new(state.gist_file_name),
+                sync_mode: Signal::new(SyncMode::NotSynced),
             })
         }
     }

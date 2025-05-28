@@ -69,7 +69,7 @@ pub fn calculate_completion_date(
         }
 
         // Move to the next day
-        current_date = current_date + chrono::Duration::days(1);
+        current_date += chrono::Duration::days(1);
     }
 
     Some(current_date)

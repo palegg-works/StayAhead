@@ -1,6 +1,6 @@
 [package]
 name = "stay-ahead"
-version = "0.1.6"
+version = "0.1.6+1"
 authors = ["Palegg Works <palegg.works@gmail.com>"]
 edition = "2021"
 
@@ -10,6 +10,7 @@ edition = "2021"
 chrono = "0.4.41"
 dioxus = { version = "0.6.0", features = ["router"] }
 dirs = "6.0.0"
+reqwest = { version = "0.12.16", features = ["json"] }
 serde = "1.0.219"
 serde_json = "1.0.140"
 strum = "0.27.1"

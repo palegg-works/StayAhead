@@ -18,6 +18,12 @@ pub fn TaskList() -> Element {
         if let Some(state) = imported_serializable_state() {
             if let Ok(state) = AppState::try_from(state) {
                 app_state_import.tasks.set((state.tasks)());
+                app_state_import.sync_mode.set((state.sync_mode)());
+                app_state_import.github_pat.set((state.github_pat)());
+                app_state_import.gist_id.set((state.gist_id)());
+                app_state_import
+                    .gist_file_name
+                    .set((state.gist_file_name)());
             }
         }
     });
@@ -56,6 +62,10 @@ pub fn TaskList() -> Element {
                     if let Some(imported_serializable_state) = import_data() {
                         if let Ok(imported_app_state) = TryInto::<AppState>::try_into(imported_serializable_state) {
                             app_state_import.tasks.set((imported_app_state.tasks)());
+                            app_state_import.sync_mode.set((imported_app_state.sync_mode)());
+                            app_state_import.github_pat.set((imported_app_state.github_pat)());
+                            app_state_import.gist_id.set((imported_app_state.gist_id)());
+                            app_state_import.gist_file_name.set((imported_app_state.gist_file_name)());
                         }
                     }
 
