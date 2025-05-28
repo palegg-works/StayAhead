@@ -1,7 +1,5 @@
-use crate::states::AppState;
-use crate::states::MyTask;
-use chrono::Datelike;
-use chrono::{Local, NaiveDate, Weekday};
+use crate::states::{AppState, MyTask};
+use chrono::{Datelike, Local, NaiveDate, Weekday};
 use dioxus::prelude::*;
 use std::collections::HashSet;
 use strum::IntoEnumIterator;

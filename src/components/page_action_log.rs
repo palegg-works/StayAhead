@@ -1,5 +1,4 @@
-use crate::states::AppState;
-use crate::states::MOTIVATIONAL_MSGS;
+use crate::states::{AppState, MOTIVATIONAL_MSGS};
 use chrono::Local;
 use dioxus::prelude::*;
 use std::collections::hash_map::DefaultHasher;

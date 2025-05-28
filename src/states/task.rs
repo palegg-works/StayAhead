@@ -13,18 +13,6 @@ fn default_effective_dow() -> Vec<String> {
     ]
 }
 
-fn default_daily_tasks() -> Option<Vec<String>> {
-    None
-}
-
-fn default_name() -> Option<String> {
-    None
-}
-
-fn default_archive() -> bool {
-    false
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct MyTask {
     pub id: i64,
@@ -53,13 +41,13 @@ pub struct SerializableTask {
     #[serde(default = "default_effective_dow")]
     pub effective_dow: Vec<String>,
 
-    #[serde(default = "default_daily_tasks")]
+    #[serde(default)]
     pub daily_tasks: Option<Vec<String>>,
 
-    #[serde(default = "default_name")]
+    #[serde(default)]
     pub name: Option<String>,
 
-    #[serde(default = "default_archive")]
+    #[serde(default)]
     pub archive: bool,
 }
 

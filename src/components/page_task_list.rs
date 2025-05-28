@@ -1,5 +1,5 @@
-use super::routes::Route;
 use crate::states::{AppState, SerializableState};
+use crate::Route;
 use dioxus::prelude::*;
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]

@@ -7,18 +7,6 @@ use std::path::PathBuf;
 
 const STORAGE_KEY: &str = "PaleggWorks_StayAhead_AppState";
 
-fn default_github_pat() -> Option<String> {
-    None
-}
-
-fn default_gist_id() -> Option<String> {
-    None
-}
-
-fn default_gist_file_name() -> Option<String> {
-    None
-}
-
 #[derive(Debug, Clone)]
 pub struct AppState {
     pub tasks: Signal<Option<Vec<MyTask>>>,
@@ -32,13 +20,13 @@ pub struct AppState {
 pub struct SerializableState {
     pub tasks: Option<Vec<SerializableTask>>,
 
-    #[serde(default = "default_github_pat")]
+    #[serde(default)]
     pub github_pat: Option<String>,
 
-    #[serde(default = "default_gist_id")]
+    #[serde(default)]
     pub gist_id: Option<String>,
 
-    #[serde(default = "default_gist_file_name")]
+    #[serde(default)]
     pub gist_file_name: Option<String>,
 }
 

@@ -1,6 +1,4 @@
-use crate::AppState;
-use crate::Route;
-use crate::SyncMode;
+use crate::{AppState, Route, SyncMode};
 use dioxus::prelude::*;
 
 const ICON_ALL_TASKS: Asset = asset!("/assets/png/all_tasks.png");
