@@ -1,4 +1,5 @@
-use crate::states::{AppState, MOTIVATIONAL_MSGS};
+use crate::states::MOTIVATIONAL_MSGS;
+use crate::{AppState, NoSaveAppState, SyncMode};
 use chrono::Local;
 use dioxus::prelude::*;
 use std::collections::hash_map::DefaultHasher;
@@ -15,6 +16,11 @@ fn random_motivational_msg() -> String {
 
 #[component]
 pub fn ActionLog() -> Element {
+    let no_save_app_state = use_context::<NoSaveAppState>();
+    let mut sync_msg = no_save_app_state.sync_msg;
+    let mut sync_mode = no_save_app_state.sync_mode;
+    let mut fire_push = use_signal(|| false);
+
     let mut app_state = use_context::<AppState>();
 
     let mut submit_return_msg = use_signal(|| "".to_string());
@@ -38,6 +44,31 @@ pub fn ActionLog() -> Element {
     });
 
     let enable_submit = use_memo(move || selected_task_index().is_some() && count_done() > 0.0_f32);
+
+    use_effect(move || {
+        if fire_push() {
+            spawn({
+                sync_mode.set(SyncMode::Pushing);
+                async move {
+                    let mut app_state = use_context::<AppState>();
+                    match app_state.push().await {
+                        Ok(_) => {
+                            sync_msg
+                                .set("✅ Automatic push was successful after logging!".to_string());
+                            sync_mode.set(SyncMode::InSync);
+                        }
+                        Err(e) => {
+                            sync_msg.set(format!(
+                                "⚠️ Automatic push failed after creating logging: {}",
+                                e
+                            ));
+                            sync_mode.set(SyncMode::NotSynced);
+                        }
+                    }
+                }
+            });
+        }
+    });
 
     rsx! {
         if has_tasks() {
@@ -139,6 +170,8 @@ pub fn ActionLog() -> Element {
 
                                         // Use motivational messages in production
                                         submit_return_msg.set(random_motivational_msg());
+
+                                        fire_push.set(true);
                                     }
                                 }
                             }

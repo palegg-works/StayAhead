@@ -1,5 +1,5 @@
-use crate::states::AppState;
 use crate::Route;
+use crate::{AppState, NoSaveAppState, SyncMode};
 use chrono::{Datelike, Duration, Local, NaiveDate, Timelike};
 use dioxus::prelude::*;
 use std::cmp::Ordering;
@@ -47,6 +47,12 @@ fn fill_ratio_user_universe(index: usize, count_per_day: f32, count_accum: f32) 
 
 #[component]
 pub fn TaskVisual(id: i64) -> Element {
+    let no_save_app_state = use_context::<NoSaveAppState>();
+    let mut sync_msg = no_save_app_state.sync_msg;
+    let mut sync_mode = no_save_app_state.sync_mode;
+    let mut fire_push_after_deletion = no_save_app_state.fire_push_after_deletion;
+    let mut fire_push_after_vis_change = use_signal(|| false);
+
     let mut app_state = use_context::<AppState>();
     let navigator = use_navigator();
 
@@ -75,6 +81,33 @@ pub fn TaskVisual(id: i64) -> Element {
     let mut n_clicks_on_archive = use_signal(|| 0_i64);
     let mut collapse_to_today = use_signal(|| false);
     let mut collapse_to_done = use_signal(|| false);
+
+    use_effect(move || {
+        if fire_push_after_vis_change() {
+            spawn({
+                sync_mode.set(SyncMode::Pushing);
+                async move {
+                    let mut app_state = use_context::<AppState>();
+                    match app_state.push().await {
+                        Ok(_) => {
+                            sync_msg.set(
+                                "✅ Automatic push was successful after changing the visibility of a task!"
+                                    .to_string(),
+                            );
+                            sync_mode.set(SyncMode::InSync);
+                        }
+                        Err(e) => {
+                            sync_msg.set(format!(
+                                "⚠️ Automatic push failed after changing the visibility of a task: {}",
+                                e
+                            ));
+                            sync_mode.set(SyncMode::NotSynced);
+                        }
+                    }
+                }
+            });
+        }
+    });
 
     rsx! {
         div {
@@ -290,7 +323,8 @@ pub fn TaskVisual(id: i64) -> Element {
                                 }
                             }
 
-                            navigator.push(Route::TaskList);
+                            fire_push_after_vis_change.set(true);
+                            n_clicks_on_archive.set(0);
                         }
                     },
                     if task.archive {
@@ -318,6 +352,8 @@ pub fn TaskVisual(id: i64) -> Element {
                                 if let Some(tasks_vec) = tasks_signal.as_mut() {
                                     tasks_vec.retain(|t| t.id != id);
                                 }
+
+                                fire_push_after_deletion.set(true);
                                 navigator.push(Route::TaskList);
                             }
                         },

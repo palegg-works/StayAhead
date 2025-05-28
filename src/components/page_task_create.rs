@@ -1,4 +1,5 @@
-use crate::states::{AppState, MyTask};
+use crate::states::MyTask;
+use crate::{AppState, NoSaveAppState, SyncMode};
 use chrono::{Datelike, Local, NaiveDate, Weekday};
 use dioxus::prelude::*;
 use std::collections::HashSet;
@@ -75,6 +76,11 @@ pub fn calculate_completion_date(
 
 #[component]
 pub fn TaskCreate() -> Element {
+    let no_save_app_state = use_context::<NoSaveAppState>();
+    let mut sync_msg = no_save_app_state.sync_msg;
+    let mut sync_mode = no_save_app_state.sync_mode;
+    let mut fire_push = use_signal(|| false);
+
     let mut app_state = use_context::<AppState>();
 
     let today_str = Local::now().date_naive().to_string();
@@ -107,6 +113,33 @@ pub fn TaskCreate() -> Element {
     use_effect(move || {
         let _ = selected_creation_mode.read();
         submit_return_msg.set("".to_string());
+    });
+
+    use_effect(move || {
+        if fire_push() {
+            spawn({
+                sync_mode.set(SyncMode::Pushing);
+                async move {
+                    let mut app_state = use_context::<AppState>();
+                    match app_state.push().await {
+                        Ok(_) => {
+                            sync_msg.set(
+                                "✅ Automatic push was successful after creating a task!"
+                                    .to_string(),
+                            );
+                            sync_mode.set(SyncMode::InSync);
+                        }
+                        Err(e) => {
+                            sync_msg.set(format!(
+                                "⚠️ Automatic push failed after creating a task: {}",
+                                e
+                            ));
+                            sync_mode.set(SyncMode::NotSynced);
+                        }
+                    }
+                }
+            });
+        }
     });
 
     rsx! {
@@ -303,6 +336,7 @@ pub fn TaskCreate() -> Element {
 
                                     let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                                     submit_return_msg.set(format!("✅ Created a task ({})", now));
+                                    fire_push.set(true);
                                 } else {
                                     submit_return_msg.set("❌ Task creation failed! Please check dates!".to_string());
                                 }
@@ -446,6 +480,7 @@ pub fn TaskCreate() -> Element {
 
                                         let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                                         submit_return_msg.set(format!("✅ Created a task ({})", now));
+                                        fire_push.set(true);
                                     } else {
                                         submit_return_msg.set("❌ Task creation failed! Please check dates!".to_string());
                                     }

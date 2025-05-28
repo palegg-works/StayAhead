@@ -1,4 +1,4 @@
-use crate::{AppState, Route, SyncMode};
+use crate::{AppState, NoSaveAppState, Route, SyncMode};
 use dioxus::prelude::*;
 
 const ICON_ALL_TASKS: Asset = asset!("/assets/png/all_tasks.png");
@@ -9,7 +9,13 @@ const ICON_SETTING: Asset = asset!("/assets/png/sync.png");
 
 #[component]
 pub fn HeaderNavbar() -> Element {
+    let no_save_app_state = use_context::<NoSaveAppState>();
+    let mut sync_msg = no_save_app_state.sync_msg;
+    let mut sync_mode = no_save_app_state.sync_mode;
+    let mut fire_push_after_deletion = no_save_app_state.fire_push_after_deletion;
+
     let app_state = use_context::<AppState>();
+
     let current_route = use_route::<Route>();
     let is_active = |target: &Route| current_route == *target;
 
@@ -19,6 +25,33 @@ pub fn HeaderNavbar() -> Element {
     let active_class_str =
         "bg-white border border-gray-300 rounded-md shadow-sm text-blue-900 hover:text-blue-900";
     let inactive_class_str = "opacity-50 hover:opacity-100 hover:text-blue-900";
+
+    use_effect(move || {
+        if fire_push_after_deletion() {
+            spawn({
+                sync_mode.set(SyncMode::Pushing);
+                async move {
+                    let mut app_state = use_context::<AppState>();
+                    match app_state.push().await {
+                        Ok(_) => {
+                            sync_msg.set(
+                                "✅ Automatic push was successful after deleting a task!"
+                                    .to_string(),
+                            );
+                            sync_mode.set(SyncMode::InSync);
+                        }
+                        Err(e) => {
+                            sync_msg.set(format!(
+                                "⚠️ Automatic push failed after deleting a task: {}",
+                                e
+                            ));
+                            sync_mode.set(SyncMode::NotSynced);
+                        }
+                    }
+                }
+            });
+        }
+    });
 
     rsx! {
         nav {
@@ -100,7 +133,7 @@ pub fn HeaderNavbar() -> Element {
                     img {
                         src: ICON_SETTING,
                         class: {
-                            match (app_state.sync_mode)() {
+                            match sync_mode() {
                                 SyncMode::NotSynced => format!("{} opacity-20 rounded-full", icon_css),
                                 SyncMode::Pushing => format!("{} bg-orange-200 rounded-full animate-spin", icon_css),
                                 SyncMode::Pulling => format!("{} bg-orange-200 rounded-full animate-spin", icon_css),

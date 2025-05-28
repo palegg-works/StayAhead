@@ -1,97 +1,16 @@
-use crate::states::{decode, encode};
 use crate::{AppState, NoSaveAppState, SerializableState, SyncMode};
 use dioxus::prelude::*;
 
 const APPKEY: &str = "OBFUSCATION";
 
-async fn push_to_gist(
-    github_pat: Option<String>,
-    gist_id: Option<String>,
-    gist_file_name: Option<String>,
-    new_content: String,
-) -> Result<(), String> {
-    if github_pat.is_none() || gist_id.is_none() || gist_file_name.is_none() {
-        return Err("Incomplete configuration for pushing".to_string());
-    }
-
-    let github_pat = github_pat.unwrap();
-    let gist_id = gist_id.unwrap();
-    let gist_file_name = gist_file_name.unwrap();
-
-    let client = reqwest::Client::new();
-    let get_url = format!("https://api.github.com/gists/{}", gist_id);
-
-    let mut files = serde_json::Map::new();
-    files.insert(
-        gist_file_name.to_string(),
-        serde_json::json!({ "content": new_content }),
-    );
-
-    let patch_body = serde_json::json!({ "files": files });
-
-    let response = client
-        .patch(&get_url)
-        .header("Authorization", format!("Bearer {}", github_pat))
-        .header("User-Agent", "Stay Ahead - Palegg Works")
-        .json(&patch_body)
-        .send()
-        .await
-        .map_err(|e| format!("Failed to send request: {e}"))?;
-
-    if response.status().is_success() {
-        Ok(())
-    } else {
-        let status = response.status();
-        let body = response.text().await.unwrap_or_default();
-        Err(format!("Push error: {status} - {body}"))
-    }
-}
-
-async fn pull_from_gist(
-    github_pat: Option<String>,
-    gist_id: Option<String>,
-    gist_file_name: Option<String>,
-) -> Result<String, Box<dyn std::error::Error + 'static>> {
-    if github_pat.is_none() || gist_id.is_none() || gist_file_name.is_none() {
-        return Err("Incomplete configuration for pulling".into());
-    }
-
-    let github_pat = github_pat.unwrap();
-    let gist_id = gist_id.unwrap();
-    let gist_file_name = gist_file_name.unwrap();
-
-    let client = reqwest::Client::new();
-    let get_url = format!("https://api.github.com/gists/{}", gist_id);
-
-    let response = client
-        .get(&get_url)
-        .header("Authorization", format!("Bearer {}", github_pat))
-        .header("User-Agent", "Stay Ahead - Palegg Works")
-        .send()
-        .await?;
-
-    if !response.status().is_success() {
-        return Err(format!("GitHub API request failed: {}", response.status()).into());
-    }
-
-    let gist: serde_json::Value = response.json().await?;
-
-    let content = gist["files"][gist_file_name]["content"]
-        .as_str()
-        .unwrap_or_default()
-        .to_string();
-
-    Ok(content)
-}
-
 #[component]
 pub fn Setting() -> Element {
     let mut app_state_push = use_context::<AppState>();
-    let mut app_state_pull = use_context::<AppState>();
     let mut app_state = use_context::<AppState>();
 
     let no_save_app_state = use_context::<NoSaveAppState>();
     let mut sync_msg = no_save_app_state.sync_msg;
+    let mut sync_mode = no_save_app_state.sync_mode;
 
     let clickable = use_memo(move || {
         if let Some(github_pat) = (app_state.github_pat)() {
@@ -109,7 +28,7 @@ pub fn Setting() -> Element {
 
     use_effect(move || {
         if !clickable() {
-            (app_state.sync_mode).set(SyncMode::NotSynced)
+            sync_mode.set(SyncMode::NotSynced)
         }
     });
 
@@ -128,9 +47,8 @@ pub fn Setting() -> Element {
         div {
             class: "p-6 max-w-xl mx-auto space-y-6 bg-white rounded-xl shadow",
 
-            h2 { class: "text-xl font-bold", "Gist Sync Settings" }
-            h2 { class: "text-xl", {format!("Current sync status: {:?}", (app_state.sync_mode)())} }
-            p { class: "text-sm text-gray-500", "Leave any field empty to stay in local-only mode." }
+            h2 { class: "text-xl font-bold", "Sync Settings" }
+            p { class: "text-sm text-gray-500", "⚠️ Sync functionality is currently in beta. Use with caution." }
 
             div {
                 label { "GitHub Gist ID" }
@@ -189,31 +107,22 @@ pub fn Setting() -> Element {
                     disabled: !clickable(),
                     onclick: move |_| {
                         if clickable() {
-                            let mut serializable: SerializableState = (&app_state_push).into();
-
-                            let encrypted_pat = encode(&(app_state_push.github_pat)().unwrap());
-                            serializable.github_pat = Some(encrypted_pat);
-
-                            if let Ok(json) = serde_json::to_string_pretty(&serializable) {
-                                (app_state_push.sync_mode).set(SyncMode::Pushing);
-                                spawn(async move {
-                                    match push_to_gist(
-                                        (app_state_push.github_pat)(),
-                                        (app_state_push.gist_id)(),
-                                        (app_state_push.gist_file_name)(),
-                                        json).await {
-
+                            spawn({
+                                sync_mode.set(SyncMode::Pushing);
+                                async move {
+                                    let mut app_state = use_context::<AppState>();
+                                    match app_state.push().await {
                                         Ok(_) => {
-                                            (app_state_push.sync_mode).set(SyncMode::InSync);
-                                            sync_msg.set("✅ Push was successful!".to_string());
+                                            sync_msg.set("✅ Manual push was successful!".to_string());
+                                            sync_mode.set(SyncMode::InSync);
                                         },
                                         Err(e) => {
-                                            (app_state_push.sync_mode).set(SyncMode::Failed);
-                                            sync_msg.set(format!("❌ {}", e));
+                                            sync_msg.set(format!("⚠️ Manual push failed: {}", e));
+                                            sync_mode.set(SyncMode::NotSynced);
                                         },
                                     }
-                                });
-                            }
+                                }
+                            });
                         }
                     },
                     "Push: upload local data"
@@ -224,36 +133,20 @@ pub fn Setting() -> Element {
                     disabled: !clickable(),
                     onclick: move |_| {
                         if clickable() {
-                            (app_state_pull.sync_mode).set(SyncMode::Pulling);
-                            spawn(async move {
-                                match pull_from_gist(
-                                    (app_state_pull.github_pat)(),
-                                    (app_state_pull.gist_id)(),
-                                    (app_state_pull.gist_file_name)()).await {
-
-                                    Ok(content) => {
-                                        if let Ok(parsed) = serde_json::from_str::<SerializableState>(&content) {
-                                            if let Ok(state) = TryInto::<AppState>::try_into(parsed) {
-                                                app_state_pull.tasks.set((state.tasks)());
-                                                app_state_pull.gist_id.set((state.gist_id)());
-                                                app_state_pull.gist_file_name.set((state.gist_file_name)());
-
-                                                let decoded_pat = decode(&(state.github_pat)().unwrap());
-                                                app_state_pull.github_pat.set(Some(decoded_pat));
-
-                                                app_state_pull.sync_mode.set(SyncMode::InSync);
-                                                sync_msg.set("✅ Pull was successful!".to_string());
-                                                return;
-                                            }
-                                        }
-
-                                        (app_state_pull.sync_mode).set(SyncMode::Failed);
-                                        sync_msg.set("❌ Failed at parsing pulled data!".to_string());
-                                    },
-                                    Err(e) => {
-                                        (app_state_pull.sync_mode).set(SyncMode::Failed);
-                                        sync_msg.set(format!("❌ {}", e));
-                                    },
+                            spawn({
+                                sync_mode.set(SyncMode::Pulling);
+                                async move {
+                                    let mut app_state = use_context::<AppState>();
+                                    match app_state.pull().await {
+                                        Ok(_) => {
+                                            sync_msg.set("✅ Manual pull was successful!".to_string());
+                                            sync_mode.set(SyncMode::InSync);
+                                        },
+                                        Err(e) => {
+                                            sync_msg.set(format!("⚠️ Manual pull failed: {}", e));
+                                            sync_mode.set(SyncMode::NotSynced);
+                                        },
+                                    }
                                 }
                             });
                         }
@@ -263,11 +156,13 @@ pub fn Setting() -> Element {
             }
 
             div {
-                label { "Sync Message" }
+                h2 { class: "text-xl", { format!("Current sync status: {:?}", sync_mode()) } }
+
+                label { "Additional sync message:" }
                 textarea {
                     class: "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-32",
                     value: sync_msg,
-                    oninput: move |evt| sync_msg.set(evt.value()),
+                    readonly: true,
                 }
             }
 

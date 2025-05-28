@@ -1,6 +1,8 @@
 mod components;
 mod states;
 
+use core::sync;
+
 use components::Route;
 use dioxus::prelude::*;
 use states::{AppState, NoSaveAppState, SerializableState, SyncMode};
@@ -14,28 +16,55 @@ fn main() {
 
 #[component]
 fn App() -> Element {
-    let app_state = use_context_provider(|| match SerializableState::load() {
-        Ok(state) => match TryInto::<AppState>::try_into(state) {
-            Ok(state) => state,
-            _ => AppState {
+    let no_save_app_state = use_context_provider(|| NoSaveAppState {
+        sync_msg: Signal::new("".to_string()),
+        sync_mode: Signal::new(SyncMode::NotSynced),
+        fire_push_after_deletion: Signal::new(false),
+    });
+
+    let mut sync_msg = no_save_app_state.sync_msg;
+    let mut sync_mode = no_save_app_state.sync_mode;
+
+    let mut app_state = use_context_provider(|| {
+        let mut app_state = match SerializableState::load() {
+            Ok(state) => match TryInto::<AppState>::try_into(state) {
+                Ok(state) => state,
+                _ => AppState {
+                    tasks: Signal::new(None),
+                    github_pat: Signal::new(None),
+                    gist_id: Signal::new(None),
+                    gist_file_name: Signal::new(None),
+                },
+            },
+            Err(_) => AppState {
                 tasks: Signal::new(None),
-                sync_mode: Signal::new(SyncMode::NotSynced),
                 github_pat: Signal::new(None),
                 gist_id: Signal::new(None),
                 gist_file_name: Signal::new(None),
             },
-        },
-        Err(_) => AppState {
-            tasks: Signal::new(None),
-            sync_mode: Signal::new(SyncMode::NotSynced),
-            github_pat: Signal::new(None),
-            gist_id: Signal::new(None),
-            gist_file_name: Signal::new(None),
-        },
-    });
+        };
 
-    let _ = use_context_provider(|| NoSaveAppState {
-        sync_msg: Signal::new("".to_string()),
+        // Trigger a initial pull
+        let mut app_state_for_pull = app_state.clone();
+
+        spawn({
+            sync_mode.set(SyncMode::Pulling);
+
+            async move {
+                match app_state_for_pull.pull().await {
+                    Ok(_) => {
+                        sync_msg.set("✅ Initial pull was successful!".to_string());
+                        sync_mode.set(SyncMode::InSync);
+                    }
+                    Err(e) => {
+                        sync_msg.set("⚠️ Initial pull failed. Not synced!".to_string());
+                        sync_mode.set(SyncMode::NotSynced);
+                    }
+                }
+            }
+        });
+
+        app_state
     });
 
     use_effect(move || {

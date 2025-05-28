@@ -1,3 +1,4 @@
+use super::STORAGE_KEY;
 use crate::states::{decode, encode};
 use crate::{AppState, SerializableState};
 use std::path::PathBuf;
