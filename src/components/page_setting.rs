@@ -116,7 +116,7 @@ pub fn Setting() -> Element {
 
                             h3 {
                                 class: "text-lg font-semibold mb-2",
-                                "Scan to import on your phone:"
+                                "Scan to import code:"
                             }
 
                             {
@@ -194,7 +194,7 @@ pub fn Setting() -> Element {
 
                             h3 {
                                 class: "text-lg font-semibold mb-2",
-                                "Scan to import on your phone:"
+                                "Scan to import code:"
                             }
 
                             {
