@@ -1,6 +1,7 @@
 mod encoding;
 mod motivation;
 mod platform;
+mod qr;
 mod serializable_state;
 mod serializable_task;
 mod state;
@@ -9,6 +10,7 @@ mod task;
 
 pub use encoding::{decode, encode};
 pub use motivation::MOTIVATIONAL_MSGS;
+pub use qr::generate_qr_data_url;
 pub use serializable_state::SerializableState;
 pub use state::{AppState, NoSaveAppState};
 pub use sync_mode::SyncMode;
