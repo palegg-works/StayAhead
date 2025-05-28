@@ -191,8 +191,8 @@ pub fn TaskVisual(id: i64) -> Element {
                     let user_ratio = fill_ratio_user_universe(i, task.count_per_day, task.count_accum);
                     rsx! {
                         div {
-                            class: "grid grid-cols-3 gap-1 items-center p-2 border border-gray-200 rounded-lg mb-0.5", // Bounding box styles
-                                                                                                                       // Parallel Universe box
+                            class: "grid grid-cols-3 gap-1 items-center p-2 border border-gray-200 rounded-lg mb-0.5",
+
                             div {
                                 class: "flex flex-col items-center",
                                 div {
@@ -259,7 +259,7 @@ pub fn TaskVisual(id: i64) -> Element {
         }
 
         div {
-            class: "p-6 max-w-5xl grid grid-cols-3 mx-auto",
+            class: {format!("p-6 max-w-5xl grid mx-auto {}", if task.archive {"grid-cols-3"} else {"grid-cols-2"})},
 
             div {
                 class: "flex flex-col justify-center mx-4",
@@ -305,25 +305,27 @@ pub fn TaskVisual(id: i64) -> Element {
                 }
             }
 
-            div {
-                class: "flex flex-col justify-center mx-4",
-                button {
-                    class: "bg-red-100 hover:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-red-300 hover:ring-offset-2",
-                    onclick: move |_| {
-                        if n_clicks_on_remove() == 0 {
-                            n_clicks_on_remove.set(1);
-                        } else if n_clicks_on_remove() == 1 {
-                            let mut tasks_signal = app_state.tasks.write();
-                            if let Some(tasks_vec) = tasks_signal.as_mut() {
-                                tasks_vec.retain(|t| t.id != id);
+            if task.archive {
+                div {
+                    class: "flex flex-col justify-center mx-4",
+                    button {
+                        class: "bg-red-100 hover:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-red-300 hover:ring-offset-2",
+                        onclick: move |_| {
+                            if n_clicks_on_remove() == 0 {
+                                n_clicks_on_remove.set(1);
+                            } else if n_clicks_on_remove() == 1 {
+                                let mut tasks_signal = app_state.tasks.write();
+                                if let Some(tasks_vec) = tasks_signal.as_mut() {
+                                    tasks_vec.retain(|t| t.id != id);
+                                }
+                                navigator.push(Route::TaskList);
                             }
-                            navigator.push(Route::TaskList);
+                        },
+                        {
+                            if n_clicks_on_remove() == 0 {"🗑 Remove Task"}
+                            else if n_clicks_on_remove() == 1 {"Confirm Removing"}
+                            else {"Error!"}
                         }
-                    },
-                    {
-                        if n_clicks_on_remove() == 0 {"🗑 Remove Task"}
-                        else if n_clicks_on_remove() == 1 {"Confirm Removing"}
-                        else {"Error!"}
                     }
                 }
             }

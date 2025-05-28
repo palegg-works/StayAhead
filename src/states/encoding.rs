@@ -1,4 +1,16 @@
-pub fn xor_encrypt(input: &str, key: &str) -> Vec<u8> {
+const CRYPT_KEY: &str = "OBFUSCATION_ONLY";
+
+pub fn encode(input: &str) -> String {
+    let encrypted_pat = xor_encrypt(input, CRYPT_KEY);
+    encode_hex(&encrypted_pat)
+}
+
+pub fn decode(input: &str) -> String {
+    let decoded_pat = decode_hex(input);
+    xor_decrypt(&decoded_pat, CRYPT_KEY)
+}
+
+fn xor_encrypt(input: &str, key: &str) -> Vec<u8> {
     input
         .as_bytes()
         .iter()
@@ -7,7 +19,7 @@ pub fn xor_encrypt(input: &str, key: &str) -> Vec<u8> {
         .collect()
 }
 
-pub fn xor_decrypt(encrypted: &[u8], key: &str) -> String {
+fn xor_decrypt(encrypted: &[u8], key: &str) -> String {
     encrypted
         .iter()
         .zip(key.as_bytes().iter().cycle())
@@ -16,11 +28,11 @@ pub fn xor_decrypt(encrypted: &[u8], key: &str) -> String {
         .collect()
 }
 
-pub fn encode_hex(bytes: &[u8]) -> String {
+fn encode_hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{:02x}", b)).collect()
 }
 
-pub fn decode_hex(s: &str) -> Vec<u8> {
+fn decode_hex(s: &str) -> Vec<u8> {
     s.as_bytes()
         .chunks(2)
         .map(|pair| {

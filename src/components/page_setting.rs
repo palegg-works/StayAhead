@@ -1,5 +1,5 @@
-use crate::states::{decode_hex, encode_hex, xor_decrypt, xor_encrypt};
-use crate::{AppState, SerializableState, SyncMode};
+use crate::states::{decode, encode};
+use crate::{AppState, NoSaveAppState, SerializableState, SyncMode};
 use dioxus::prelude::*;
 
 const APPKEY: &str = "OBFUSCATION";
@@ -86,10 +86,12 @@ async fn pull_from_gist(
 
 #[component]
 pub fn Setting() -> Element {
-    let app_state_push = use_context::<AppState>();
-
+    let mut app_state_push = use_context::<AppState>();
+    let mut app_state_pull = use_context::<AppState>();
     let mut app_state = use_context::<AppState>();
-    let mut sync_message = use_signal(|| "".to_string());
+
+    let no_save_app_state = use_context::<NoSaveAppState>();
+    let mut sync_msg = no_save_app_state.sync_msg;
 
     let clickable = use_memo(move || {
         if let Some(github_pat) = (app_state.github_pat)() {
@@ -124,7 +126,8 @@ pub fn Setting() -> Element {
 
     rsx! {
         div {
-            class: "p-6 space-y-6 max-w-xl mx-auto",
+            class: "p-6 max-w-xl mx-auto space-y-6 bg-white rounded-xl shadow",
+
             h2 { class: "text-xl font-bold", "Gist Sync Settings" }
             h2 { class: "text-xl", {format!("Current sync status: {:?}", (app_state.sync_mode)())} }
             p { class: "text-sm text-gray-500", "Leave any field empty to stay in local-only mode." }
@@ -179,35 +182,34 @@ pub fn Setting() -> Element {
             }
 
             div {
-                class: "flex space-x-4",
+                class: "flex space-x-4 justify-center",
 
                 button {
                     class: button_css,
                     disabled: !clickable(),
                     onclick: move |_| {
                         if clickable() {
-                            let mut serilizable: SerializableState = (&app_state_push).into();
+                            let mut serializable: SerializableState = (&app_state_push).into();
 
-                            let encrypted_pat = xor_encrypt(&(app_state_push.github_pat)().unwrap(), APPKEY);
-                            let encrypted_pat = encode_hex(&encrypted_pat);
-                            serilizable.github_pat = Some(encrypted_pat);
+                            let encrypted_pat = encode(&(app_state_push.github_pat)().unwrap());
+                            serializable.github_pat = Some(encrypted_pat);
 
-                            if let Ok(json) = serde_json::to_string_pretty(&serilizable) {
-                                (app_state.sync_mode).set(SyncMode::Pushing);
+                            if let Ok(json) = serde_json::to_string_pretty(&serializable) {
+                                (app_state_push.sync_mode).set(SyncMode::Pushing);
                                 spawn(async move {
                                     match push_to_gist(
-                                        (app_state.github_pat)(),
-                                        (app_state.gist_id)(),
-                                        (app_state.gist_file_name)(),
+                                        (app_state_push.github_pat)(),
+                                        (app_state_push.gist_id)(),
+                                        (app_state_push.gist_file_name)(),
                                         json).await {
 
                                         Ok(_) => {
-                                            (app_state.sync_mode).set(SyncMode::InSync);
-                                            sync_message.set("✅ Push was successful!".to_string());
+                                            (app_state_push.sync_mode).set(SyncMode::InSync);
+                                            sync_msg.set("✅ Push was successful!".to_string());
                                         },
                                         Err(e) => {
-                                            (app_state.sync_mode).set(SyncMode::Failed);
-                                            sync_message.set(format!("❌ {}", e));
+                                            (app_state_push.sync_mode).set(SyncMode::Failed);
+                                            sync_msg.set(format!("❌ {}", e));
                                         },
                                     }
                                 });
@@ -222,36 +224,35 @@ pub fn Setting() -> Element {
                     disabled: !clickable(),
                     onclick: move |_| {
                         if clickable() {
-                            (app_state.sync_mode).set(SyncMode::Pulling);
+                            (app_state_pull.sync_mode).set(SyncMode::Pulling);
                             spawn(async move {
                                 match pull_from_gist(
-                                    (app_state.github_pat)(),
-                                    (app_state.gist_id)(),
-                                    (app_state.gist_file_name)()).await {
+                                    (app_state_pull.github_pat)(),
+                                    (app_state_pull.gist_id)(),
+                                    (app_state_pull.gist_file_name)()).await {
 
                                     Ok(content) => {
                                         if let Ok(parsed) = serde_json::from_str::<SerializableState>(&content) {
                                             if let Ok(state) = TryInto::<AppState>::try_into(parsed) {
-                                                app_state.tasks.set((state.tasks)());
-                                                app_state.gist_id.set((state.gist_id)());
-                                                app_state.gist_file_name.set((state.gist_file_name)());
+                                                app_state_pull.tasks.set((state.tasks)());
+                                                app_state_pull.gist_id.set((state.gist_id)());
+                                                app_state_pull.gist_file_name.set((state.gist_file_name)());
 
-                                                let decoded_pat = decode_hex(&(state.github_pat)().unwrap());
-                                                let decoded_pat = xor_decrypt(&decoded_pat, APPKEY);
-                                                app_state.github_pat.set(Some(decoded_pat));
+                                                let decoded_pat = decode(&(state.github_pat)().unwrap());
+                                                app_state_pull.github_pat.set(Some(decoded_pat));
 
-                                                app_state.sync_mode.set(SyncMode::InSync);
-                                                sync_message.set("✅ Pull was successful!".to_string());
+                                                app_state_pull.sync_mode.set(SyncMode::InSync);
+                                                sync_msg.set("✅ Pull was successful!".to_string());
                                                 return;
                                             }
                                         }
 
-                                        (app_state.sync_mode).set(SyncMode::Failed);
-                                        sync_message.set("❌ Failed at parsing pulled data!".to_string());
+                                        (app_state_pull.sync_mode).set(SyncMode::Failed);
+                                        sync_msg.set("❌ Failed at parsing pulled data!".to_string());
                                     },
                                     Err(e) => {
-                                        (app_state.sync_mode).set(SyncMode::Failed);
-                                        sync_message.set(format!("❌ {}", e));
+                                        (app_state_pull.sync_mode).set(SyncMode::Failed);
+                                        sync_msg.set(format!("❌ {}", e));
                                     },
                                 }
                             });
@@ -265,8 +266,8 @@ pub fn Setting() -> Element {
                 label { "Sync Message" }
                 textarea {
                     class: "mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm h-32",
-                    value: sync_message,
-                    oninput: move |evt| sync_message.set(evt.value()),
+                    value: sync_msg,
+                    oninput: move |evt| sync_msg.set(evt.value()),
                 }
             }
 

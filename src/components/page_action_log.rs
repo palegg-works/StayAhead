@@ -4,7 +4,7 @@ use dioxus::prelude::*;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 
-fn get_motivational_msg() -> String {
+fn random_motivational_msg() -> String {
     let timestamp = Local::now().timestamp();
     let mut hasher = DefaultHasher::new();
     timestamp.hash(&mut hasher);
@@ -137,12 +137,8 @@ pub fn ActionLog() -> Element {
                                     if let Some(task) = tasks_mut.get_mut(i) {
                                         task.count_accum += count_done();
 
-                                        // If debugging
-                                        //let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
-                                        //submit_return_msg.set(format!("✅ Logged! ({})", now));
-
                                         // Use motivational messages in production
-                                        submit_return_msg.set(get_motivational_msg());
+                                        submit_return_msg.set(random_motivational_msg());
                                     }
                                 }
                             }

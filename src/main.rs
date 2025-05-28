@@ -3,7 +3,7 @@ mod states;
 
 use components::Route;
 use dioxus::prelude::*;
-use states::{AppState, LoadError, SerializableState, SyncMode};
+use states::{AppState, NoSaveAppState, SerializableState, SyncMode};
 
 const FAVICON: Asset = asset!("/assets/icons/favicon.ico");
 const TAILWIND_CSS: Asset = asset!("/assets/css/tailwind_output.css");
@@ -25,20 +25,17 @@ fn App() -> Element {
                 gist_file_name: Signal::new(None),
             },
         },
-        Err(LoadError::FileNotFound(_)) => AppState {
+        Err(_) => AppState {
             tasks: Signal::new(None),
             sync_mode: Signal::new(SyncMode::NotSynced),
             github_pat: Signal::new(None),
             gist_id: Signal::new(None),
             gist_file_name: Signal::new(None),
         },
-        Err(LoadError::InvalidJson(_)) => AppState {
-            tasks: Signal::new(None),
-            sync_mode: Signal::new(SyncMode::NotSynced),
-            github_pat: Signal::new(None),
-            gist_id: Signal::new(None),
-            gist_file_name: Signal::new(None),
-        },
+    });
+
+    let _ = use_context_provider(|| NoSaveAppState {
+        sync_msg: Signal::new("".to_string()),
     });
 
     use_effect(move || {
