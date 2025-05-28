@@ -92,7 +92,9 @@ impl AppState {
     pub async fn push(&mut self) -> Result<(), String> {
         let mut serializable: SerializableState = (&*self).into();
 
-        let encrypted_pat = encode(&(self.github_pat)().unwrap());
+        let github_pat =
+            (self.github_pat)().ok_or_else(|| "❌ GitHub PAT is missing".to_string())?;
+        let encrypted_pat = encode(&github_pat);
         serializable.github_pat = Some(encrypted_pat);
 
         let json = serde_json::to_string_pretty(&serializable)
