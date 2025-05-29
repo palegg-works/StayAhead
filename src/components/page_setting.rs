@@ -222,7 +222,16 @@ pub fn Setting() -> Element {
                 class: "flex space-x-4 justify-center",
 
                 button {
-                    class: button_css,
+                    class: {
+                        format!(
+                            "font-semibold py-2 px-4 rounded transition-colors duration-300 {}",
+                            if clickable() {
+                                "bg-amber-600 hover:bg-amber-700 text-white cursor-pointer"
+                            } else {
+                                "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            }
+                        )
+                    },
                     disabled: !clickable(),
                     onclick: move |_| {
                         if clickable() {
@@ -248,7 +257,16 @@ pub fn Setting() -> Element {
                 }
 
                 button {
-                    class: button_css,
+                    class: {
+                        format!(
+                            "font-semibold py-2 px-4 rounded transition-colors duration-300 {}",
+                            if clickable() {
+                                "bg-cyan-600 hover:bg-cyan-700 text-white cursor-pointer"
+                            } else {
+                                "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            }
+                        )
+                    },
                     disabled: !clickable(),
                     onclick: move |_| {
                         if clickable() {
