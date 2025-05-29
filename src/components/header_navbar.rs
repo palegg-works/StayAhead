@@ -55,7 +55,7 @@ pub fn HeaderNavbar() -> Element {
 
     rsx! {
         nav {
-            class: "bg-gray-100 shadow flex justify-center space-x-2 py-1",
+            class: "sticky top-0 bg-white z-50 shadow bg-gray-100 shadow flex justify-center space-x-2 py-1",
 
             div {
                 class: if is_active(&Route::TaskList) { active_class_str } else { inactive_class_str },
