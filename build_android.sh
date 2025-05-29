@@ -7,11 +7,25 @@
 # https://icon.kitchen/
 
 set -e
+VERSION=$(grep '^version' Cargo.toml | sed -E 's/version *= *"(.*)"/\1/')
 
 if [[ -z "$KEYSTORE_PASS" ]]; then
-  echo "❌ Please set KEYSTORE_PASS environment variables."
-  echo "Try source .env"
-  exit 1
+  echo "❌ KEYSTORE_PASS is not set."
+  echo "ℹ️ Attempting to source .env..."
+
+  # Source .env if it exists
+  if [[ -f .env ]]; then
+    source .env
+  else
+    echo "❌ .env file not found."
+    exit 1
+  fi
+
+  # Check again after sourcing
+  if [[ -z "$KEYSTORE_PASS" ]]; then
+    echo "❌ KEYSTORE_PASS is still not set. Please define it in your environment or .env file."
+    exit 1
+  fi
 fi
 
 # bundle with dx
@@ -52,6 +66,6 @@ apksigner sign \
 rm release_android_key.jks
 rm app-release-aligned.apk
 zip stay-ahead.zip app-release-signed.apk
-cp stay-ahead.zip ~/Desktop
+cp stay-ahead.zip ~/Desktop/StayAhead_"$VERSION"_Android.zip
 
-echo "✅ Copied stay-ahead.zip to ~/Desktop"
+echo "✅ Copied android zip to ~/Desktop"

@@ -51,8 +51,17 @@ pub fn About() -> Element {
                 }
 
                 div {
-                    h2 {  class: "font-semibold", "Cool. Can I use this on a different platform?" }
-                    p { "Yes. Currently there is a desktop release for MacOS. Please refer the release page on Github. I have personally built and installed the Android version for myself. Open a ticket if this is needed."}
+                    h2 {  class: "font-semibold", "Can I use this on a different platform?" }
+                    p {
+                        "Yes. Currently there is a desktop release for MacOS Apple chips and android. Please visit the ",
+                        a {
+                            href: "https://github.com/palegg-works/StayAhead/releases/latest",
+                            target: "_blank",
+                            class: "text-blue-600 hover:text-blue-800 underline font-semibold",
+                            "release page"
+                        },
+                        " for the latest downloads."
+                    }
                 }
 
                 div {
