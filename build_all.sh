@@ -7,5 +7,7 @@ set -e
 
 ./build_gh_pages.sh
 
+dx clean
+
 echo "✅ All targets have been built!"
 
