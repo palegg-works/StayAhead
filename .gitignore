@@ -20,3 +20,5 @@ target/
 node_modules
 
 Cargo.lock
+.env
+.release_android_key.jks
