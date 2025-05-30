@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-./build_macos.sh
-
 ./build_android.sh
+
+./build_macos.sh
 
 ./build_gh_pages.sh
 

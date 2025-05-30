@@ -56,7 +56,7 @@ zipalign -v -p 4 \
 
 # sign and install
 apksigner sign \
-    --ks .release_android_key.jks \
+    --ks ../../../../../../.release_android_key.jks \
     --ks-pass pass:$KEYSTORE_PASS \
     --out app-release-signed.apk \
     app-release-aligned.apk
