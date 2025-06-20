@@ -88,7 +88,7 @@ pub fn TaskList() -> Element {
                         p {
                             class: "font-semibold text-gray-800 text-lg",
                             {
-                                let n_tasks = (app_state.tasks)().unwrap().iter().filter(
+                                let n_tasks = (app_state.tasks)().unwrap().values().filter(
                                     |task| if archive_view() {task.archive} else {!task.archive}).count();
                                 format!("🗂 You have {} {} task(s):", n_tasks, if archive_view() {"archived"} else {"active"})}
                         },
@@ -105,7 +105,7 @@ pub fn TaskList() -> Element {
                     div {
                         class: "grid grid-cols-1 gap-4",
                         {
-                            (app_state.tasks)().unwrap().iter().filter(
+                            (app_state.tasks)().unwrap().values().filter(
                                 |task| if archive_view() {task.archive} else {!task.archive}).map(|task| {
                                 let id = task.id;
                                 rsx! {

@@ -2,6 +2,7 @@ use super::sync_mode::SyncMode;
 use super::{MyTask, SerializableState};
 use crate::states::{decode, encode};
 use dioxus::prelude::*;
+use std::collections::HashMap;
 
 /*
  * Struct Definition
@@ -16,7 +17,7 @@ pub struct NoSaveAppState {
 
 #[derive(Debug, Clone)]
 pub struct AppState {
-    pub tasks: Signal<Option<Vec<MyTask>>>,
+    pub tasks: Signal<Option<HashMap<i64, MyTask>>>,
     pub github_pat: Signal<Option<String>>,
     pub gist_id: Signal<Option<String>>,
     pub gist_file_name: Signal<Option<String>>,
@@ -34,7 +35,9 @@ impl TryFrom<SerializableState> for AppState {
             let tasks = tasks
                 .iter()
                 .map(|t| {
-                    MyTask::try_from(t).expect("Conversion failed from SerializableTask to MyTask")
+                    let task = MyTask::try_from(t)
+                        .expect("Conversion failed from SerializableTask to MyTask");
+                    (task.id, task)
                 })
                 .collect();
 

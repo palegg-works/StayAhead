@@ -28,7 +28,7 @@ impl From<&AppState> for SerializableState {
     fn from(state: &AppState) -> Self {
         let tasks = (state.tasks)();
         if let Some(tasks) = tasks {
-            let tasks: Vec<SerializableTask> = tasks.iter().map(SerializableTask::from).collect();
+            let tasks: Vec<SerializableTask> = tasks.values().map(SerializableTask::from).collect();
             SerializableState {
                 tasks: Some(tasks),
                 github_pat: (state.github_pat)(),

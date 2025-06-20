@@ -8,7 +8,7 @@
 
 # Before running this code, make sure you have:
 #
-# 1. Set the KEYSTORE_PASS variable
+# 1. Set the KEYSTORE_PASS variable 
 # 2. Generated a jks file with the following code
 #    or a jks file has already been created with the KEYSTORE_PASS
 : '

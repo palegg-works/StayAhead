@@ -33,17 +33,30 @@ pub fn ActionLog() -> Element {
         }
     });
 
-    let mut selected_task_index = use_signal(|| if has_tasks() { Some(0_usize) } else { None });
+    let mut selected_task_id = use_signal(|| {
+        if has_tasks() {
+            Some(
+                (app_state.tasks)()
+                    .unwrap()
+                    .values()
+                    .next()
+                    .expect("Error")
+                    .id,
+            )
+        } else {
+            None
+        }
+    });
 
     let mut count_done = use_signal(|| {
-        if selected_task_index().is_some() {
+        if selected_task_id().is_some() {
             1.0_f32
         } else {
             0.0_f32
         }
     });
 
-    let enable_submit = use_memo(move || selected_task_index().is_some() && count_done() > 0.0_f32);
+    let enable_submit = use_memo(move || selected_task_id().is_some() && count_done() > 0.0_f32);
 
     use_effect(move || {
         if fire_push() {
@@ -91,16 +104,14 @@ pub fn ActionLog() -> Element {
                         onchange: move |e| {
                             if let Ok(id) = e.data().value().parse::<i64>() {
                                 if let Some(tasks) = (app_state.tasks)() {
-                                    if let Some(index) = tasks.iter().position(|task| task.id == id) {
-                                        selected_task_index.set(Some(index));
-                                    }
+                                    selected_task_id.set(Some(id));
                                 }
                             }
                         },
 
                         if let Some(tasks) = (app_state.tasks)() {
                             {
-                                tasks.iter().filter(|task| !task.archive).map(|task| rsx! {
+                                tasks.values().filter(|task| !task.archive).map(|task| rsx! {
                                     option {
                                         value: "{task.id}",
                                         {
@@ -123,8 +134,12 @@ pub fn ActionLog() -> Element {
                     label {
                         class: "block text-sm font-medium text-gray-700 mb-1",
                         {
-                            let unit_str = if let Some(i) = selected_task_index() {
-                                " ".to_string() + &(app_state.tasks)().unwrap()[i].unit
+                            let unit_str = if let Some(id) = selected_task_id() {
+                                if let Some(t) = (app_state.tasks)().unwrap().get(&id) {
+                                    " ".to_string() + &t.unit
+                                } else {
+                                    " *unit error*".to_string()
+                                }
                             } else {
                                 " ".to_string()
                             };
@@ -162,10 +177,10 @@ pub fn ActionLog() -> Element {
                             }
                         ),
                         onclick: move |_| {
-                            if let Some(i) = selected_task_index() {
+                            if let Some(id) = selected_task_id() {
                                 let mut tasks_write = app_state.tasks.write();
                                 if let Some(tasks_mut) = tasks_write.as_mut() {
-                                    if let Some(task) = tasks_mut.get_mut(i) {
+                                    if let Some(task) = tasks_mut.get_mut(&id) {
                                         task.count_accum += count_done();
 
                                         // Use motivational messages in production

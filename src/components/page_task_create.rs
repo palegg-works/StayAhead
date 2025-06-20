@@ -326,13 +326,7 @@ pub fn TaskCreate() -> Element {
                                         archive: false,
                                     };
 
-                                    let should_insert = app_state.tasks.read().is_some();
-
-                                    if should_insert {
-                                        app_state.tasks.write().as_mut().unwrap().push(task);
-                                    } else {
-                                        app_state.tasks.set(Some(vec![task]));
-                                    }
+                                    app_state.tasks.write().as_mut().unwrap().insert(task.id, task);
 
                                     let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                                     submit_return_msg.set(format!("✅ Created a task ({})", now));
@@ -470,13 +464,7 @@ pub fn TaskCreate() -> Element {
                                             archive: false,
                                         };
 
-                                        let should_insert = app_state.tasks.read().is_some();
-
-                                        if should_insert {
-                                            app_state.tasks.write().as_mut().unwrap().push(task);
-                                        } else {
-                                            app_state.tasks.set(Some(vec![task]));
-                                        }
+                                        app_state.tasks.write().as_mut().unwrap().insert(task.id, task);
 
                                         let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                                         submit_return_msg.set(format!("✅ Created a task ({})", now));

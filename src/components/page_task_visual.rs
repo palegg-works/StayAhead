@@ -56,7 +56,7 @@ pub fn TaskVisual(id: i64) -> Element {
     let mut app_state = use_context::<AppState>();
     let navigator = use_navigator();
 
-    let task = (app_state.tasks)().and_then(|tasks| tasks.iter().find(|t| t.id == id).cloned());
+    let task = (app_state.tasks)().and_then(|tasks| tasks.get(&id).cloned());
 
     if task.is_none() {
         return rsx! { p { "Task not found." } };
@@ -315,8 +315,8 @@ pub fn TaskVisual(id: i64) -> Element {
                         } else if n_clicks_on_archive() == 1 {
                             let mut tasks_signal = app_state.tasks.write();
 
-                            if let Some(tasks_vec) = tasks_signal.as_mut() {
-                                for task in tasks_vec.iter_mut() {
+                            if let Some(tasks) = tasks_signal.as_mut() {
+                                for task in tasks.values_mut() {
                                     if task.id == id {
                                         task.archive = !task.archive;
                                     }
@@ -349,8 +349,8 @@ pub fn TaskVisual(id: i64) -> Element {
                                 n_clicks_on_remove.set(1);
                             } else if n_clicks_on_remove() == 1 {
                                 let mut tasks_signal = app_state.tasks.write();
-                                if let Some(tasks_vec) = tasks_signal.as_mut() {
-                                    tasks_vec.retain(|t| t.id != id);
+                                if let Some(tasks) = tasks_signal.as_mut() {
+                                    tasks.remove(&id);
                                 }
 
                                 fire_push_after_deletion.set(true);
