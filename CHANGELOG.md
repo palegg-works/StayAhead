@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Stablized the layout when switching between scrolling and non-scrolling contents
+- Stablized the layout when switching between scrolling and non-scrolling contents.
+- The submit button will be disabled when syncing is ongoing.
 
 ### Removed
 

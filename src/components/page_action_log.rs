@@ -56,7 +56,12 @@ pub fn ActionLog() -> Element {
         }
     });
 
-    let enable_submit = use_memo(move || selected_task_id().is_some() && count_done() > 0.0_f32);
+    let enable_submit = use_memo(move || {
+        selected_task_id().is_some()
+            && count_done() > 0.0_f32
+            && sync_mode() != SyncMode::Pushing
+            && sync_mode() != SyncMode::Pulling
+    });
 
     use_effect(move || {
         if fire_push() {

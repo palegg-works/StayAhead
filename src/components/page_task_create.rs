@@ -105,10 +105,16 @@ pub fn TaskCreate() -> Element {
             && count_per_day() > 0.0_f32
             && !unit().is_empty()
             && !selected_dow.is_empty()
+            && sync_mode() != SyncMode::Pushing
+            && sync_mode() != SyncMode::Pulling
     });
 
-    let enable_submit_spec_mode =
-        use_memo(move || !raw_acts().is_empty() && !customized_task_name().is_empty());
+    let enable_submit_spec_mode = use_memo(move || {
+        !raw_acts().is_empty()
+            && !customized_task_name().is_empty()
+            && sync_mode() != SyncMode::Pushing
+            && sync_mode() != SyncMode::Pulling
+    });
 
     use_effect(move || {
         let _ = selected_creation_mode.read();
