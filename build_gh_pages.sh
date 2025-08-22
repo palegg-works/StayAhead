@@ -13,11 +13,13 @@ mv Dioxus.toml.bak Dioxus.toml
 git checkout gh-pages
 rm -rf assets index.html wasm
 cp -r target/dx/stay-ahead/release/web/public/* .
+cp index.html 404.html
 git add -A
 git commit -m "web release for version $VERSION"
 git push
 
 git checkout main
 [ -d wasm ] && rm -rf wasm
+[ -d 404.html ] && rm -rf 404.html
 
 echo gh-pages have been updated to $VERSION!
