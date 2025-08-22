@@ -60,7 +60,12 @@ pub fn TaskVisual(id: i64) -> Element {
     let task = (app_state.tasks)().and_then(|tasks| tasks.get(&id).cloned());
 
     if task.is_none() {
-        return rsx! { p { "Task not found." } };
+        return rsx! { 
+            div {
+                class: CSS_CONTENT_CARD,
+                p { "Task not found." }
+            }
+        };
     }
 
     let task = task.unwrap();
@@ -280,92 +285,93 @@ pub fn TaskVisual(id: i64) -> Element {
 
                 div {
                     class: "bg-blue-50 border border-blue-200 rounded-xl p-4 shadow",
-                    p { "Accomplished: {parallel_accomplished:.1} {task.unit}" }
-                    p { "Remaining: {parallel_remaining.max(0.0):.1} {task.unit}" }
+                    p { "Accomplished: {parallel_accomplished:.1}" }
+                    p { "Remaining: {parallel_remaining.max(0.0):.1}" }
                 }
 
                 div {
                     class: "bg-purple-50 border border-purple-200 rounded-xl p-4 shadow",
-                    p { "Accomplished: {user_accomplished:.1} {task.unit}" }
-                    p { "Remaining: {user_remaining.max(0.0):.1} {task.unit}" }
+                    p { "Accomplished: {user_accomplished:.1}" }
+                    p { "Remaining: {user_remaining.max(0.0):.1}" }
                 }
             }
-        }
-
-        div {
-            class: {format!("p-6 max-w-5xl grid mx-auto {}", if task.archive {"grid-cols-3"} else {"grid-cols-2"})},
-
+            
             div {
-                class: "flex flex-col justify-center mx-4",
-                button {
-                    class: "bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-gray-300 hover:ring-offset-2",
-                    onclick: move |_| {
-                        navigator.push(Route::TaskList);
-                    },
-                    "⬅️ All Tasks",
-                }
-            },
-
-            div {
-                class: "flex flex-col justify-center mx-4",
-                button {
-                    class: "bg-red-100 hover:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-red-300 hover:ring-offset-2",
-                    onclick: move |_| {
-                        if n_clicks_on_archive() == 0 {
-                            n_clicks_on_archive.set(1);
-                        } else if n_clicks_on_archive() == 1 {
-                            let mut tasks_signal = app_state.tasks.write();
-
-                            if let Some(tasks) = tasks_signal.as_mut() {
-                                for task in tasks.values_mut() {
-                                    if task.id == id {
-                                        task.archive = !task.archive;
-                                    }
-                                }
-                            }
-
-                            fire_push_after_vis_change.set(true);
-                            n_clicks_on_archive.set(0);
-                        }
-                    },
-                    if task.archive {
-                        if n_clicks_on_archive() == 0 {"📦 Activate Task"}
-                        else if n_clicks_on_archive() == 1 {"Confirm Activation"}
-                        else {"Error!"}
-                    } else {
-                        if n_clicks_on_archive() == 0 {"📦 Archive Task"}
-                        else if n_clicks_on_archive() == 1 {"Confirm Archiving"}
-                        else {"Error!"}
-                    }
-                }
-            }
-
-            if task.archive {
+                class: {format!("p-6 max-w-5xl grid mx-auto {}", if task.archive {"grid-cols-3"} else {"grid-cols-2"})},
+    
                 div {
                     class: "flex flex-col justify-center mx-4",
                     button {
-                        class: "bg-red-100 hover:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-red-300 hover:ring-offset-2",
+                        class: "bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-gray-300 hover:ring-offset-2 cursor-pointer",
                         onclick: move |_| {
-                            if n_clicks_on_remove() == 0 {
-                                n_clicks_on_remove.set(1);
-                            } else if n_clicks_on_remove() == 1 {
+                            navigator.push(Route::TaskList);
+                        },
+                        "⬅️ All Tasks",
+                    }
+                },
+    
+                div {
+                    class: "flex flex-col justify-center mx-4",
+                    button {
+                        class: "bg-red-100 hover:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-red-300 hover:ring-offset-2 cursor-pointer",
+                        onclick: move |_| {
+                            if n_clicks_on_archive() == 0 {
+                                n_clicks_on_archive.set(1);
+                            } else if n_clicks_on_archive() == 1 {
                                 let mut tasks_signal = app_state.tasks.write();
+    
                                 if let Some(tasks) = tasks_signal.as_mut() {
-                                    tasks.remove(&id);
+                                    for task in tasks.values_mut() {
+                                        if task.id == id {
+                                            task.archive = !task.archive;
+                                        }
+                                    }
                                 }
-
-                                fire_push_after_deletion.set(true);
-                                navigator.push(Route::TaskList);
+    
+                                fire_push_after_vis_change.set(true);
+                                n_clicks_on_archive.set(0);
                             }
                         },
-                        {
-                            if n_clicks_on_remove() == 0 {"🗑 Remove Task"}
-                            else if n_clicks_on_remove() == 1 {"Confirm Removing"}
+                        if task.archive {
+                            if n_clicks_on_archive() == 0 {"📦 Activate Task"}
+                            else if n_clicks_on_archive() == 1 {"Confirm Activation"}
+                            else {"Error!"}
+                        } else {
+                            if n_clicks_on_archive() == 0 {"📦 Archive Task"}
+                            else if n_clicks_on_archive() == 1 {"Confirm Archiving"}
                             else {"Error!"}
                         }
                     }
                 }
+    
+                if task.archive {
+                    div {
+                        class: "flex flex-col justify-center mx-4",
+                        button {
+                            class: "bg-red-100 hover:bg-red-400 text-white font-medium py-2 px-4 rounded-lg transition-all hover:ring hover:ring-red-300 hover:ring-offset-2 cursor-pointer",
+                            onclick: move |_| {
+                                if n_clicks_on_remove() == 0 {
+                                    n_clicks_on_remove.set(1);
+                                } else if n_clicks_on_remove() == 1 {
+                                    let mut tasks_signal = app_state.tasks.write();
+                                    if let Some(tasks) = tasks_signal.as_mut() {
+                                        tasks.remove(&id);
+                                    }
+    
+                                    fire_push_after_deletion.set(true);
+                                    navigator.push(Route::TaskList);
+                                }
+                            },
+                            {
+                                if n_clicks_on_remove() == 0 {"🗑 Remove Task"}
+                                else if n_clicks_on_remove() == 1 {"Confirm Removing"}
+                                else {"Error!"}
+                            }
+                        }
+                    }
+                }
             }
         }
+
     }
 }

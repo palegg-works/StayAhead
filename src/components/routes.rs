@@ -37,7 +37,10 @@ pub fn Director(pagename: String) -> Element {
     let parts: Vec<&str> = pagename.split('/').collect();
     match parts[0] {
         "TaskVisual" => {
-            let id = parts.get(1).and_then(|s| s.parse::<i64>().ok()).unwrap_or(0);
+            let id = match parts.get(1).and_then(|s| s.parse::<i64>().ok()) {
+                Some(valid_id) => valid_id,
+                None => return rsx!(TaskList {}),
+            };
             rsx!(TaskVisual { id: id })
         }
         "TaskCreate" => rsx!(TaskCreate {}),

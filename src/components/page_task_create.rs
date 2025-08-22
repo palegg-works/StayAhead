@@ -83,7 +83,6 @@ pub fn TaskCreate() -> Element {
     let mut fire_push = use_signal(|| false);
 
     let mut app_state = use_context::<AppState>();
-    log::info!("TaskCreate component rendered");
 
     let today_str = Local::now().date_naive().to_string();
     let tomorrow_str = (Local::now().date_naive() + chrono::Duration::days(1)).to_string();
@@ -334,7 +333,14 @@ pub fn TaskCreate() -> Element {
                                         archive: false,
                                     };
 
-                                    app_state.tasks.write().as_mut().unwrap().insert(task.id, task);
+                                    let mut tasks_guard = app_state.tasks.write();
+                                    if let Some(tasks) = tasks_guard.as_mut() {
+                                        tasks.insert(task.id, task);
+                                    } else {
+                                        let mut map = std::collections::HashMap::new();
+                                        map.insert(task.id, task);
+                                        *tasks_guard = Some(map);
+                                    }
 
                                     let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                                     submit_return_msg.set(format!("✅ Created a task ({})", now));
@@ -472,7 +478,14 @@ pub fn TaskCreate() -> Element {
                                             archive: false,
                                         };
 
-                                        app_state.tasks.write().as_mut().unwrap().insert(task.id, task);
+                                        let mut tasks_guard = app_state.tasks.write();
+                                        if let Some(tasks) = tasks_guard.as_mut() {
+                                            tasks.insert(task.id, task);
+                                        } else {
+                                            let mut map = std::collections::HashMap::new();
+                                            map.insert(task.id, task);
+                                            *tasks_guard = Some(map);
+                                        }
 
                                         let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
                                         submit_return_msg.set(format!("✅ Created a task ({})", now));
