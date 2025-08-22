@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use super::css_preset::*;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -6,7 +7,7 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn About() -> Element {
     rsx! {
         div {
-            class: "p-6 max-w-2xl mx-auto space-y-6 text-gray-800",
+            class: CSS_CONTENT_CARD,
 
             h1 {
                 class: "text-2xl font-bold text-blue-700",

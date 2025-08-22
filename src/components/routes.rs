@@ -13,18 +13,38 @@ pub enum Route {
     #[route("/")]
     TaskList,
 
-    #[route("/task_visual/:id")]
-    TaskVisual { id: i64 },
+    #[route("/:pagename")]
+    Director { pagename: String },
 
-    #[route("/task_create")]
-    TaskCreate,
+    // #[route("/task_visual/:id")]
+    // TaskVisual { id: i64 },
 
-    #[route("/action_log")]
-    ActionLog,
+    // #[route("/task_create")]
+    // TaskCreate,
 
-    #[route("/about")]
-    About,
+    // #[route("/action_log")]
+    // ActionLog,
 
-    #[route("/setting")]
-    Setting,
+    // #[route("/about")]
+    // About,
+
+    // #[route("/setting")]
+    // Setting,
+}
+
+#[component]
+pub fn Director(pagename: String) -> Element {
+    let parts: Vec<&str> = pagename.split('/').collect();
+    match parts[0] {
+        "TaskVisual" => {
+            let id = parts.get(1).and_then(|s| s.parse::<i64>().ok()).unwrap_or(0);
+            rsx!(TaskVisual { id: id })
+        }
+        "TaskCreate" => rsx!(TaskCreate {}),
+        "ActionLog" => rsx!(ActionLog {}),
+        "About" => rsx!(About {}),
+        "Setting" => rsx!(Setting {}),
+        "TaskList" => rsx!(TaskList {}),
+        _ => rsx!(TaskList {}),
+    }
 }

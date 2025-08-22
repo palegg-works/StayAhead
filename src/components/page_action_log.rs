@@ -4,6 +4,7 @@ use chrono::Local;
 use dioxus::prelude::*;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+use super::css_preset::*;
 
 fn random_motivational_msg() -> String {
     let timestamp = Local::now().timestamp();
@@ -91,7 +92,7 @@ pub fn ActionLog() -> Element {
     rsx! {
         if has_tasks() {
             div {
-                class: "p-6 max-w-xl mx-auto space-y-6 bg-white rounded-xl shadow",
+                class: CSS_CONTENT_CARD,
 
                 h2 {
                     class: "text-lg font-bold",
@@ -209,7 +210,7 @@ pub fn ActionLog() -> Element {
             }
         } else {
             p {
-                class: "text-gray-600 text-center",
+                class: CSS_CONTENT_CARD,
                 "You do not have any tasks yet. Challenge yourself by adding a new task in a different tab!",
             }
         }

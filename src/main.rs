@@ -11,11 +11,21 @@ const FAVICON: Asset = asset!("/assets/icons/favicon.ico");
 const TAILWIND_CSS: Asset = asset!("/assets/css/tailwind_output.css");
 
 fn main() {
+    console_log::init_with_level(log::Level::Info).expect("error initializing log");
     dioxus::launch(App);
 }
 
 #[component]
 fn App() -> Element {
+
+    use_effect(move || {
+        document::eval(
+            r#"
+            document.body.classList.add('loaded');
+            "#
+        );
+    });
+    
     let no_save_app_state = use_context_provider(|| NoSaveAppState {
         sync_msg: Signal::new("".to_string()),
         sync_mode: Signal::new(SyncMode::NotSynced),

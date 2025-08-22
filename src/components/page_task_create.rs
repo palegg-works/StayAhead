@@ -5,6 +5,7 @@ use dioxus::prelude::*;
 use std::collections::HashSet;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
+use super::css_preset::*;
 
 static ALL_WEEKDAYS: [Weekday; 7] = [
     Weekday::Mon,
@@ -82,6 +83,7 @@ pub fn TaskCreate() -> Element {
     let mut fire_push = use_signal(|| false);
 
     let mut app_state = use_context::<AppState>();
+    log::info!("TaskCreate component rendered");
 
     let today_str = Local::now().date_naive().to_string();
     let tomorrow_str = (Local::now().date_naive() + chrono::Duration::days(1)).to_string();
@@ -150,7 +152,7 @@ pub fn TaskCreate() -> Element {
 
     rsx! {
         div {
-            class: "p-6 max-w-xl mx-auto space-y-4 bg-white rounded-xl shadow",
+            class: CSS_CONTENT_CARD,
 
             // Mode selection boxes
             div {

@@ -9,6 +9,8 @@ const ICON_SETTING: Asset = asset!("/assets/png/sync.png");
 
 #[component]
 pub fn HeaderNavbar() -> Element {
+    let current_route = use_route::<Route>();
+
     let no_save_app_state = use_context::<NoSaveAppState>();
     let mut sync_msg = no_save_app_state.sync_msg;
     let mut sync_mode = no_save_app_state.sync_mode;
@@ -17,9 +19,8 @@ pub fn HeaderNavbar() -> Element {
     let app_state = use_context::<AppState>();
 
     let current_route = use_route::<Route>();
-    let is_active = |target: &Route| current_route == *target;
 
-    let tab_css = "flex justify-center items-center gap-2 px-2 py-5 text-blue-700 font-medium";
+    let tab_css = "flex justify-center items-center gap-2 px-2 py-3 text-blue-700 font-medium";
     let icon_css = "w-7 h-7";
 
     let active_class_str =
@@ -54,107 +55,150 @@ pub fn HeaderNavbar() -> Element {
     });
 
     rsx! {
-        nav {
-            class: "sticky top-0 bg-white z-50 shadow bg-gray-100 shadow flex justify-center space-x-2 py-1",
-
+        div {
+            class: "min-h-screen relative",
+            
             div {
-                class: if is_active(&Route::TaskList) { active_class_str } else { inactive_class_str },
-                Link {
-                    class: tab_css,
-                    to: Route::TaskList,
-                    img {
-                        src: ICON_ALL_TASKS,
-                        class: icon_css,
-                        alt: "All Tasks"
-                    },
-                    span {
-                        class: "hidden sm:inline",
-                        " Tasks"
-                    }
-                }
+                class: "fixed inset-0 bg-white",
             }
 
-            div {
-                class: if is_active(&Route::TaskCreate) { active_class_str } else { inactive_class_str },
-                Link {
-                    class: tab_css,
-                    to: Route::TaskCreate,
-                    img {
-                        src: ICON_NEW_TASKS,
-                        class: icon_css,
-                        alt: "New Task"
-                    },
-                    span {
-                        class: "hidden sm:inline",
-                        " New"
-                    }
-                }
-            }
-
-            div {
-                class: if is_active(&Route::ActionLog) { active_class_str } else { inactive_class_str },
-                Link {
-                    class: tab_css,
-                    to: Route::ActionLog,
-                    img {
-                        src: ICON_LOG_ACTION,
-                        class: icon_css,
-                        alt: "Log Action"
-                    },
-                    span {
-                        class: "hidden sm:inline",
-                        " Log"
-                    }
-                }
-            }
-
-            div {
-                class: if is_active(&Route::About) { active_class_str } else { inactive_class_str },
-                Link {
-                    class: tab_css,
-                    to: Route::About,
-                    img {
-                        src: ICON_QA,
-                        class: icon_css,
-                        alt: "Q&A"
-                    },
-                    span {
-                        class: "hidden sm:inline",
-                        " Q&A"
-                    }
-                }
-            }
-
-            div {
-                class: if is_active(&Route::Setting) { active_class_str } else { inactive_class_str },
-                Link {
-                    class: tab_css,
-                    to: Route::Setting,
-                    img {
-                        src: ICON_SETTING,
+            header {
+                class: "w-full flex justify-center fixed top-0 left-0 bg-white border-b-2 border-gray-300 z-10",
+    
+                nav {
+                    class: "flex space-x-3 text-lg",
+        
+                    div {
                         class: {
-                            match sync_mode() {
-                                SyncMode::NotSynced => format!("{} opacity-20 rounded-full", icon_css),
-                                SyncMode::Pushing => format!("{} bg-orange-200 rounded-full animate-spin", icon_css),
-                                SyncMode::Pulling => format!("{} bg-orange-200 rounded-full animate-spin", icon_css),
-                                SyncMode::InSync => format!("{} bg-green-400 rounded-full", icon_css),
-                                SyncMode::Failed => format!("{} bg-red-400 rounded-full", icon_css),
-                            }
+                            let is_active = match &current_route {
+                                Route::Director { pagename } if pagename == "TaskList" => true,
+                                _ => false,
+                            };
+                            if is_active { active_class_str } else { inactive_class_str }
                         },
-                        alt: "Sync"
-                    },
-                    span {
-                        class: "hidden sm:inline",
-                        " Sync"
+                        Link {
+                            class: tab_css,
+                            to: Route::Director { pagename: "TaskList".to_string() },
+                            img {
+                                src: ICON_ALL_TASKS,
+                                class: icon_css,
+                                alt: "All Tasks"
+                            },
+                            span {
+                                class: "hidden sm:inline",
+                                " Tasks"
+                            }
+                        }
                     }
+        
+                    div {
+                        class: {
+                            let is_active = match &current_route {
+                                Route::Director { pagename } if pagename == "TaskCreate" => true,
+                                _ => false,
+                            };
+                            if is_active { active_class_str } else { inactive_class_str }
+                        },
+                        Link {
+                            class: tab_css,
+                            to: Route::Director { pagename: "TaskCreate".to_string() },
+                            img {
+                                src: ICON_NEW_TASKS,
+                                class: icon_css,
+                                alt: "New Task"
+                            },
+                            span {
+                                class: "hidden sm:inline",
+                                " New"
+                            }
+                        }
+                    }
+        
+                    div {
+                        class: {
+                            let is_active = match &current_route {
+                                Route::Director { pagename } if pagename == "ActionLog" => true,
+                                _ => false,
+                            };
+                            if is_active { active_class_str } else { inactive_class_str }
+                        },
+                        Link {
+                            class: tab_css,
+                            to: Route::Director { pagename: "ActionLog".to_string() },
+                            img {
+                                src: ICON_LOG_ACTION,
+                                class: icon_css,
+                                alt: "Log Action"
+                            },
+                            span {
+                                class: "hidden sm:inline",
+                                " Log"
+                            }
+                        }
+                    }
+        
+                    div {
+                        class: {
+                            let is_active = match &current_route {
+                                Route::Director { pagename } if pagename == "About" => true,
+                                _ => false,
+                            };
+                            if is_active { active_class_str } else { inactive_class_str }
+                        },
+                        Link {
+                            class: tab_css,
+                            to: Route::Director { pagename: "About".to_string() },
+                            img {
+                                src: ICON_QA,
+                                class: icon_css,
+                                alt: "Q&A"
+                            },
+                            span {
+                                class: "hidden sm:inline",
+                                " Q&A"
+                            }
+                        }
+                    }
+        
+                    div {
+                        class: {
+                            let is_active = match &current_route {
+                                Route::Director { pagename } if pagename == "Setting" => true,
+                                _ => false,
+                            };
+                            if is_active { active_class_str } else { inactive_class_str }
+                        },
+                        Link {
+                            class: tab_css,
+                            to: Route::Director { pagename: "Setting".to_string() },
+                            img {
+                                src: ICON_SETTING,
+                                class: {
+                                    match sync_mode() {
+                                        SyncMode::NotSynced => format!("{} opacity-20 rounded-full", icon_css),
+                                        SyncMode::Pushing => format!("{} bg-orange-200 rounded-full animate-spin", icon_css),
+                                        SyncMode::Pulling => format!("{} bg-orange-200 rounded-full animate-spin", icon_css),
+                                        SyncMode::InSync => format!("{} bg-green-400 rounded-full", icon_css),
+                                        SyncMode::Failed => format!("{} bg-red-400 rounded-full", icon_css),
+                                    }
+                                },
+                                alt: "Sync"
+                            },
+                            span {
+                                class: "hidden sm:inline",
+                                " Sync"
+                            }
+                        }
+                    }
+        
                 }
             }
 
+            main {
+                class: "mt-18",
+                Outlet::<Route> {}
+            }
         }
-
-        main {
-            class: "mt-6",
-            Outlet::<Route> {}
+        
         }
-    }
 }

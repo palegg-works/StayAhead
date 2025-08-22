@@ -1,6 +1,7 @@
 use crate::states::generate_qr_data_url;
 use crate::{AppState, NoSaveAppState, SerializableState, SyncMode};
 use dioxus::prelude::*;
+use super::css_preset::*;
 
 const APPKEY: &str = "OBFUSCATION";
 
@@ -74,7 +75,7 @@ pub fn Setting() -> Element {
 
     rsx! {
         div {
-            class: "p-6 max-w-xl mx-auto space-y-6 bg-white rounded-xl shadow",
+            class: CSS_CONTENT_CARD,
 
             h2 { class: "text-xl font-bold", "Sync Settings" }
             p { class: "text-sm text-gray-500", "⚠️ Sync functionality is currently in beta. Use with caution." }

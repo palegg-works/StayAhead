@@ -1,0 +1,1 @@
+pub const CSS_CONTENT_CARD: &str = "p-6 max-w-xl mx-auto space-y-4 bg-white rounded-xl shadow relative z-5";

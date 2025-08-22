@@ -3,6 +3,7 @@ use crate::{AppState, NoSaveAppState, SyncMode};
 use chrono::{Datelike, Duration, Local, NaiveDate, Timelike};
 use dioxus::prelude::*;
 use std::cmp::Ordering;
+use super::css_preset::*;
 
 const COLLAPSE_TO_TODAY_ICON: Asset = asset!("/assets/png/collapse_to_today.png");
 const COLLAPSE_TO_DONE_ICON: Asset = asset!("/assets/png/collapse_to_done.png");
@@ -111,7 +112,7 @@ pub fn TaskVisual(id: i64) -> Element {
 
     rsx! {
         div {
-            class: "p-6 max-w-5xl mx-auto space-y-6",
+            class: CSS_CONTENT_CARD,
 
             h2 { class: "text-xl font-bold text-center", "You told me that you want to ..."}
             h2 { class: "text-xl font-bold text-center", "\"{task.action} {task.count_per_day} {task.unit} every day\"" }

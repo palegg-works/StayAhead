@@ -1,6 +1,7 @@
 use crate::states::{AppState, SerializableState};
 use crate::Route;
 use dioxus::prelude::*;
+use super::css_preset::*;
 
 #[cfg(not(any(target_os = "android", target_os = "ios")))]
 use crate::states::import_data;
@@ -79,7 +80,7 @@ pub fn TaskList() -> Element {
 
     rsx! {
         div {
-            class: "p-6 max-w-2xl mx-auto space-y-6",
+            class: CSS_CONTENT_CARD,
 
             if has_tasks() {
                 div {
@@ -110,7 +111,7 @@ pub fn TaskList() -> Element {
                                 let id = task.id;
                                 rsx! {
                                     Link {
-                                        to: Route::TaskVisual { id },
+                                        to: Route::Director { pagename: format!("TaskVisual/{}", id) },
                                         class: "relative block bg-white shadow-md rounded-xl p-4 border border-gray-100 hover:shadow-lg transition-shadow hover:ring-2 hover:ring-blue-300",
                                         h3 {
                                             class: "text-lg font-semibold text-blue-800",
