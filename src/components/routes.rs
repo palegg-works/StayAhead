@@ -15,26 +15,10 @@ pub enum Route {
 
     #[route("/:pagename")]
     Director { pagename: String },
-
-    // #[route("/task_visual/:id")]
-    // TaskVisual { id: i64 },
-
-    // #[route("/task_create")]
-    // TaskCreate,
-
-    // #[route("/action_log")]
-    // ActionLog,
-
-    // #[route("/about")]
-    // About,
-
-    // #[route("/setting")]
-    // Setting,
 }
 
 #[component]
 pub fn Director(pagename: String) -> Element {
-    log::info!("Director called with pagename: {}", pagename);
     let parts: Vec<&str> = pagename.split('/').collect();
     match parts[0] {
         "TaskVisual" => {
