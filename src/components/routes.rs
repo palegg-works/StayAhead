@@ -34,6 +34,7 @@ pub enum Route {
 
 #[component]
 pub fn Director(pagename: String) -> Element {
+    log::info!("Director called with pagename: {}", pagename);
     let parts: Vec<&str> = pagename.split('/').collect();
     match parts[0] {
         "TaskVisual" => {
