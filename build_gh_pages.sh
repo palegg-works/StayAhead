@@ -13,6 +13,20 @@ mv Dioxus.toml.bak Dioxus.toml
 git checkout gh-pages
 rm -rf assets index.html wasm
 cp -r target/dx/stay-ahead/release/web/public/* .
+
+# Add Simple Analytics
+file="index.html"
+snippet='<!-- 100% privacy-first analytics --><script data-collect-dnt="true" async src="https://scripts.simpleanalyticscdn.com/latest.js"></script><noscript><img src="https://queue.simpleanalyticscdn.com/noscript.gif?collect-dnt=true" alt="" referrerpolicy="no-referrer-when-downgrade"/></noscript>'
+if sed --version >/dev/null 2>&1; then
+  # GNU sed
+  sed -i "/<\/body>/i $snippet" "$file"
+else
+  # BSD/macOS sed
+  sed -i '' "/<\/body>/i\\
+$snippet
+" "$file"
+fi
+
 cp index.html 404.html
 git add -A
 git commit -m "web release for version $VERSION"
